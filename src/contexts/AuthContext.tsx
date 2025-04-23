@@ -6,7 +6,8 @@ import {
   signInWithEmailAndPassword, 
   signInWithPopup, 
   createUserWithEmailAndPassword, 
-  signOut 
+  signOut,
+  AuthError
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 
@@ -55,17 +56,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Login with Google
   async function loginWithGoogle() {
-    const userCredential = await signInWithPopup(auth, googleProvider);
-    return userCredential.user;
+    try {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      return userCredential.user;
+    } catch (error) {
+      console.error("Google login error details:", error);
+      throw error;
+    }
   }
 
   // Sign up with email and password
   async function signup(email: string, password: string) {
     try {
+      console.log("Attempting to create user with:", { email, passwordLength: password.length });
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("User created successfully:", userCredential.user.uid);
       return userCredential.user;
     } catch (error) {
-      console.error("Error in signup function:", error);
+      console.error("Error in signup function details:", error);
       throw error; // Re-throw to handle in the component
     }
   }

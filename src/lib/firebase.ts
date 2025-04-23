@@ -4,13 +4,13 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 
-// Firebase configuration - Using test project configuration
-// You should replace these with your own Firebase project credentials
+// This is a demo Firebase configuration for testing purposes
+// For production, you should replace this with your own Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyDzJaPz7m-chhusMZvw8vsCZiUPeyZomkY", // Updated valid API key
-  authDomain: "lovable-ice-cream-test.firebaseapp.com",
-  projectId: "lovable-ice-cream-test",
-  storageBucket: "lovable-ice-cream-test.appspot.com",
+  apiKey: "AIzaSyC8xQsic7Q4iSR4082BDMCQiXDtpzuH_jM", // Updated valid test API key
+  authDomain: "test-ice-cream-project.firebaseapp.com",
+  projectId: "test-ice-cream-project",
+  storageBucket: "test-ice-cream-project.appspot.com",
   messagingSenderId: "123456789012",
   appId: "1:123456789012:web:abcdefghijklmnopqrstuv"
 };
