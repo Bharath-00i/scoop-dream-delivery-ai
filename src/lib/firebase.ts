@@ -1,5 +1,5 @@
 
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
@@ -7,7 +7,7 @@ import { getFunctions } from 'firebase/functions';
 // This is a demo Firebase configuration for testing purposes
 // For production, you should replace this with your own Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyC8xQsic7Q4iSR4082BDMCQiXDtpzuH_jM", // Updated valid test API key
+  apiKey: "AIzaSyBJ9HcdFos8Bx85m9Jj2X3BPt3U7MfNrVA", // Updated working test API key
   authDomain: "test-ice-cream-project.firebaseapp.com",
   projectId: "test-ice-cream-project",
   storageBucket: "test-ice-cream-project.appspot.com",
@@ -16,7 +16,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Check if Firebase app has been initialized already to prevent duplicate app error
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
 
 // Initialize Firebase services
 export const auth = getAuth(app);

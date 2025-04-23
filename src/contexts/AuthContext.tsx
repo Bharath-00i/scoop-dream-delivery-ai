@@ -10,6 +10,7 @@ import {
   AuthError
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
+import { FirebaseError } from 'firebase/app';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -50,14 +51,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Login with email and password
   async function login(email: string, password: string) {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    try {
+      console.log("Attempting login with:", email);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Login successful for:", userCredential.user.uid);
+      return userCredential.user;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    }
   }
 
   // Login with Google
   async function loginWithGoogle() {
     try {
+      console.log("Attempting Google login");
       const userCredential = await signInWithPopup(auth, googleProvider);
+      console.log("Google login successful for:", userCredential.user.uid);
       return userCredential.user;
     } catch (error) {
       console.error("Google login error details:", error);
@@ -74,6 +84,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return userCredential.user;
     } catch (error) {
       console.error("Error in signup function details:", error);
+      
+      // Enhanced error logging for debugging
+      if (error instanceof FirebaseError) {
+        console.error("Firebase error code:", error.code);
+        console.error("Firebase error message:", error.message);
+        
+        if (error.code === 'auth/api-key-not-valid') {
+          console.error("Firebase API key is invalid. Please check your firebase configuration.");
+        }
+      }
+      
       throw error; // Re-throw to handle in the component
     }
   }
