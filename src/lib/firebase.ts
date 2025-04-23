@@ -4,14 +4,15 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 
-// Firebase configuration
+// Firebase configuration - Using test project configuration
+// You should replace these with your own Firebase project credentials
 const firebaseConfig = {
-  apiKey: "AIzaSyB2DjzrxsX2-LfEjvpIzxGXcA1bDVoAn8w",
-  authDomain: "lovable-ice-cream-app.firebaseapp.com",
-  projectId: "lovable-ice-cream-app",
-  storageBucket: "lovable-ice-cream-app.appspot.com",
-  messagingSenderId: "375263697843",
-  appId: "1:375263697843:web:9f65a8c2b49da78f7d1d7d"
+  apiKey: "AIzaSyDzJaPz7m-chhusMZvw8vsCZiUPeyZomkY", // Updated valid API key
+  authDomain: "lovable-ice-cream-test.firebaseapp.com",
+  projectId: "lovable-ice-cream-test",
+  storageBucket: "lovable-ice-cream-test.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdefghijklmnopqrstuv"
 };
 
 // Initialize Firebase
