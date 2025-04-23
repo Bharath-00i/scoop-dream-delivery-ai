@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from "sonner";
 import { motion } from 'framer-motion';
+import { FirebaseError } from 'firebase/app';
 
 const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -63,8 +63,29 @@ export default function Signup() {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      setError('Failed to create an account.');
-      console.error(err);
+      console.error("Signup error:", err);
+      
+      if (err instanceof FirebaseError) {
+        // Handle specific Firebase errors
+        switch (err.code) {
+          case 'auth/email-already-in-use':
+            setError('This email is already in use. Try logging in instead.');
+            break;
+          case 'auth/invalid-email':
+            setError('Invalid email address format.');
+            break;
+          case 'auth/weak-password':
+            setError('Password is too weak. Please use at least 6 characters.');
+            break;
+          case 'auth/network-request-failed':
+            setError('Network error. Please check your connection and try again.');
+            break;
+          default:
+            setError(`Failed to create an account: ${err.message}`);
+        }
+      } else {
+        setError('Failed to create an account. Please try again.');
+      }
       setIsLoading(false);
     }
   };
@@ -76,8 +97,12 @@ export default function Signup() {
       await loginWithGoogle();
       navigate('/');
     } catch (err) {
-      setError('Failed to sign in with Google.');
-      console.error(err);
+      console.error("Google login error:", err);
+      if (err instanceof FirebaseError) {
+        setError(`Failed to sign in with Google: ${err.message}`);
+      } else {
+        setError('Failed to sign in with Google. Please try again.');
+      }
       setIsLoading(false);
     }
   };

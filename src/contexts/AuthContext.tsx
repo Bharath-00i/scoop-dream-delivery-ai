@@ -61,8 +61,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Sign up with email and password
   async function signup(email: string, password: string) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
+    } catch (error) {
+      console.error("Error in signup function:", error);
+      throw error; // Re-throw to handle in the component
+    }
   }
 
   // Logout
