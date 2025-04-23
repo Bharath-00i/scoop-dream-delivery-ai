@@ -5,14 +5,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 
 // Firebase configuration
-// Replace with your actual Firebase config when deploying
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyB2DjzrxsX2-LfEjvpIzxGXcA1bDVoAn8w",
+  authDomain: "lovable-ice-cream-app.firebaseapp.com",
+  projectId: "lovable-ice-cream-app",
+  storageBucket: "lovable-ice-cream-app.appspot.com",
+  messagingSenderId: "375263697843",
+  appId: "1:375263697843:web:9f65a8c2b49da78f7d1d7d"
 };
 
 // Initialize Firebase
