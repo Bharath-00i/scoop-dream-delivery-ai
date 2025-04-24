@@ -16,6 +16,7 @@ import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Wishlist from "./pages/Wishlist";  // Add Wishlist import
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/wishlist" element={<Wishlist />} /> {/* Add Wishlist route */}
                 <Route 
                   path="/checkout" 
                   element={
@@ -74,3 +76,4 @@ const App = () => (
 );
 
 export default App;
+

@@ -1,17 +1,20 @@
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const { currentUser, logout } = useAuth();
+  const { items: cartItems } = useCart();
+  const { items: wishlistItems } = useWishlist();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Handle scroll events to change navbar appearance
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
@@ -27,12 +30,10 @@ const Navigation = () => {
     };
   }, []);
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
-  // Navigation items
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Menu', path: '/menu' },
@@ -51,7 +52,6 @@ const Navigation = () => {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          {/* Logo */}
           <Link to="/">
             <motion.div 
               className="flex items-center"
@@ -62,7 +62,6 @@ const Navigation = () => {
             </motion.div>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link 
@@ -83,9 +82,32 @@ const Navigation = () => {
                 )}
               </Link>
             ))}
+
+            <div className="flex items-center space-x-4">
+              <Link to="/wishlist" className="relative">
+                <Heart 
+                  className="text-gray-600 hover:text-strawberry transition-colors"
+                  fill={wishlistItems.length > 0 ? 'currentColor' : 'none'}
+                />
+                {wishlistItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {wishlistItems.length}
+                  </span>
+                )}
+              </Link>
+              <Link to="/cart" className="relative">
+                <ShoppingCart 
+                  className="text-gray-600 hover:text-strawberry transition-colors"
+                />
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {cartItems.length}
+                  </span>
+                )}
+              </Link>
+            </div>
           </div>
 
-          {/* Auth Buttons (Desktop) */}
           <div className="hidden md:flex items-center space-x-4">
             {currentUser ? (
               <div className="flex items-center space-x-4">
@@ -117,7 +139,6 @@ const Navigation = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden flex items-center"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -149,7 +170,6 @@ const Navigation = () => {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -218,7 +238,6 @@ const Navigation = () => {
         )}
       </AnimatePresence>
 
-      {/* Spacer to prevent content from hiding under the navigation */}
       <div className="h-20" />
     </>
   );
