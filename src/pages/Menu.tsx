@@ -1,8 +1,10 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Heart } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 interface FlavorItem {
   id: string;
@@ -16,6 +18,8 @@ interface FlavorItem {
 
 const Menu = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   
   const flavors: FlavorItem[] = [
     {
@@ -99,7 +103,6 @@ const Menu = () => {
           Our Menu
         </motion.h1>
         
-        {/* Category Filter */}
         <div className="flex justify-center flex-wrap gap-2 mb-12">
           {categories.map(category => (
             <button
@@ -116,7 +119,6 @@ const Menu = () => {
           ))}
         </div>
         
-        {/* Flavors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredFlavors.map((flavor, index) => (
             <motion.div 
@@ -135,7 +137,20 @@ const Menu = () => {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-2">
                   <h2 className="text-xl font-bold text-gray-900">{flavor.name}</h2>
-                  <span className="font-medium text-strawberry">${flavor.price}</span>
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => isInWishlist(flavor.id) 
+                        ? removeFromWishlist(flavor.id) 
+                        : addToWishlist(flavor)
+                      }
+                      className="text-gray-400 hover:text-strawberry transition-colors"
+                    >
+                      <Heart 
+                        className={isInWishlist(flavor.id) ? "fill-strawberry text-strawberry" : ""} 
+                      />
+                    </button>
+                    <span className="font-medium text-strawberry">${flavor.price}</span>
+                  </div>
                 </div>
                 <p className="text-gray-600 mb-4">{flavor.description}</p>
                 <div className="flex justify-between items-center">
@@ -146,7 +161,10 @@ const Menu = () => {
                       `${flavor.available} available`
                     )}
                   </span>
-                  <button className="px-4 py-2 bg-strawberry text-white rounded-lg hover:bg-strawberry/90 transition-colors">
+                  <button 
+                    onClick={() => addToCart(flavor)}
+                    className="px-4 py-2 bg-strawberry text-white rounded-lg hover:bg-strawberry/90 transition-colors"
+                  >
                     Add to Cart
                   </button>
                 </div>
