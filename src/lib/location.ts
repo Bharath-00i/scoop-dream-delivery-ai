@@ -1,11 +1,12 @@
 
+
 // Maximum delivery radius in kilometers
 export const MAX_DELIVERY_RADIUS = 5;
 
-// Simulated shop location (should replace with actual coordinates)
+// Shop location in Kuttagam, Avinashi, Tiruppur, Tamil Nadu, India
 export const SHOP_LOCATION = {
-  lat: 37.7749, // Sample - San Francisco
-  lng: -122.4194
+  lat: 11.197708, // Avinashi, Tiruppur coordinates
+  lng: 77.268123
 };
 
 /**
@@ -91,3 +92,4 @@ export function formatDistance(distance: number): string {
   }
   return `${distance.toFixed(1)} km`;
 }
+

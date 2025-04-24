@@ -20,7 +20,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ice-cream">
+    <div className="min-h-screen bg-ice-cream flex flex-col">
       <Navigation />
       
       {/* Hero Section with 3D Ice Cream */}
@@ -117,7 +117,7 @@ const Index = () => {
             <div>
               <h2 className="text-3xl font-heading font-bold mb-4">Find out if we deliver to your area</h2>
               <p className="text-lg text-muted-foreground mb-8">
-                We deliver our delicious ice cream within a 5 km radius of our shop. 
+                We deliver our delicious ice cream within a 5 km radius of our shop in Kuttagam, Avinashi. 
                 Check if your location qualifies for delivery!
               </p>
               
@@ -136,7 +136,7 @@ const Index = () => {
       </section>
       
       {/* Footer */}
-      <footer className="py-12 px-4 md:px-8 bg-foreground text-white">
+      <footer className="py-12 px-4 md:px-8 bg-foreground text-white mt-auto">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -161,9 +161,10 @@ const Index = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
               <address className="not-italic text-gray-300 space-y-2">
-                <p>123 Ice Cream Lane</p>
-                <p>Dessert City, DC 12345</p>
-                <p>Phone: (123) 456-7890</p>
+                <p>Kuttagam, Avinashi</p>
+                <p>Tiruppur, Tamil Nadu 641654</p>
+                <p>India</p>
+                <p>Phone: +91 98765 43210</p>
                 <p>Email: hello@scoopsdream.com</p>
               </address>
             </div>
