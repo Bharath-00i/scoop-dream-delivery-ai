@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,7 +11,6 @@ const Index = () => {
   const [remainingTime, setRemainingTime] = useState<number>(3 * 60 * 60 + 45 * 60); // 3h 45m in seconds
   const [stockLeft, setStockLeft] = useState<number>(12);
   
-  // Format remaining time as HH:MM:SS
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -23,11 +21,9 @@ const Index = () => {
     <div className="min-h-screen bg-ice-cream flex flex-col">
       <Navigation />
       
-      {/* Hero Section with 3D Ice Cream */}
       <section className="relative pt-10 pb-20 px-4 md:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Left Content */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -92,7 +88,6 @@ const Index = () => {
               </div>
             </motion.div>
             
-            {/* Right 3D Ice Cream Display */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -110,7 +105,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Delivery Check Section */}
       <section className="py-16 px-4 md:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -135,7 +129,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Footer */}
       <footer className="py-12 px-4 md:px-8 bg-foreground text-white mt-auto">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -144,7 +137,7 @@ const Index = () => {
                 <span className="text-2xl font-heading font-bold text-strawberry">Scoops</span>
                 <span className="text-2xl font-heading font-bold ml-1 text-mint">Dream</span>
               </div>
-              <p className="text-gray-300">
+              <p className="text-black">
                 Artisanal ice cream made with love and the finest ingredients.
               </p>
             </div>
@@ -152,15 +145,15 @@ const Index = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4 text-strawberry">Quick Links</h4>
               <ul className="space-y-2">
-                <li><Link to="/menu" className="hover:text-strawberry">Our Menu</Link></li>
-                <li><Link to="/about" className="hover:text-strawberry">About Us</Link></li>
-                <li><Link to="/contact" className="hover:text-strawberry">Contact</Link></li>
+                <li><Link to="/menu" className="hover:text-strawberry text-chocolate">Our Menu</Link></li>
+                <li><Link to="/about" className="hover:text-strawberry text-chocolate">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-strawberry text-chocolate">Contact</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-lg font-semibold mb-4 text-mint">Contact Us</h4>
-              <address className="not-italic text-gray-300 space-y-2">
+              <address className="not-italic text-black space-y-2">
                 <p>Kuttagam, Avinashi</p>
                 <p>Tiruppur, Tamil Nadu 641654</p>
                 <p>India</p>
@@ -180,4 +173,3 @@ const Index = () => {
 };
 
 export default Index;
-
