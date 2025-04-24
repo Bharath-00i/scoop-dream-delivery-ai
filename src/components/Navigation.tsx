@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
@@ -82,35 +83,32 @@ const Navigation = () => {
                 )}
               </Link>
             ))}
-
-            <div className="flex items-center space-x-4">
-              <Link to="/wishlist" className="relative">
-                <Heart 
-                  className="text-gray-600 hover:text-strawberry transition-colors"
-                  fill={wishlistItems.length > 0 ? 'currentColor' : 'none'}
-                />
-                {wishlistItems.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {wishlistItems.length}
-                  </span>
-                )}
-              </Link>
-              <Link to="/cart" className="relative">
-                <ShoppingCart 
-                  className="text-gray-600 hover:text-strawberry transition-colors"
-                />
-                {cartItems.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {cartItems.length}
-                  </span>
-                )}
-              </Link>
-            </div>
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
             {currentUser ? (
               <div className="flex items-center space-x-4">
+                <Link to="/wishlist" className="relative">
+                  <Heart 
+                    className="text-gray-600 hover:text-strawberry transition-colors"
+                    fill={wishlistItems.length > 0 ? 'currentColor' : 'none'}
+                  />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+                <Link to="/cart" className="relative">
+                  <ShoppingCart 
+                    className="text-gray-600 hover:text-strawberry transition-colors"
+                  />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {cartItems.length}
+                    </span>
+                  )}
+                </Link>
                 <Link to="/account">
                   <Button variant="ghost" className="text-foreground">
                     My Account
@@ -125,6 +123,22 @@ const Navigation = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
+                <Link to="/wishlist" className="relative">
+                  <Heart className="text-gray-600 hover:text-strawberry transition-colors" />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+                <Link to="/cart" className="relative">
+                  <ShoppingCart className="text-gray-600 hover:text-strawberry transition-colors" />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {cartItems.length}
+                    </span>
+                  )}
+                </Link>
                 <Link to="/login">
                   <Button variant="ghost" className="text-foreground">
                     Log In
@@ -198,6 +212,28 @@ const Navigation = () => {
                   </Link>
                 </motion.div>
               ))}
+
+              <div className="flex items-center space-x-4 py-4">
+                <Link to="/wishlist" className="relative" onClick={() => setIsMenuOpen(false)}>
+                  <Heart 
+                    className="w-6 h-6 text-gray-600"
+                    fill={wishlistItems.length > 0 ? 'currentColor' : 'none'}
+                  />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+                <Link to="/cart" className="relative" onClick={() => setIsMenuOpen(false)}>
+                  <ShoppingCart className="w-6 h-6 text-gray-600" />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-strawberry text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {cartItems.length}
+                    </span>
+                  )}
+                </Link>
+              </div>
 
               <div className="pt-6 border-t border-gray-100">
                 {currentUser ? (

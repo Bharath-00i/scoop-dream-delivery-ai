@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { QrCode } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -9,10 +9,28 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { useCart } from "@/contexts/CartContext";
 import { CartItem } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 const Cart = () => {
-  const { items, removeFromCart, updateQuantity, total } = useCart();
+  const { items, removeFromCart, updateQuantity, total, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "qr">("cod");
+  const navigate = useNavigate();
+
+  const handlePlaceOrder = () => {
+    // In a real app, we would send the order to a server
+    toast.success("Order placed successfully!", {
+      description: "Your ice cream is on the way!",
+      duration: 5000
+    });
+    
+    // Clear the cart after successful order
+    clearCart();
+    
+    // Redirect to home after a short delay
+    setTimeout(() => {
+      navigate("/");
+    }, 2000);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-mint-50">
@@ -125,7 +143,7 @@ const Cart = () => {
                     </div>
                   )}
 
-                  <Button className="w-full">
+                  <Button className="w-full" onClick={handlePlaceOrder}>
                     {paymentMethod === "cod" ? "Place Order" : "I have completed the payment"}
                   </Button>
                 </div>

@@ -38,11 +38,20 @@ export default function Login() {
       setIsLoading(true);
       setError('');
       
-      // Use the login function from AuthContext instead of directly manipulating localStorage
-      await login(values.email, values.password);
+      // Use the login function from AuthContext
+      const user = await login(values.email, values.password);
       
-      toast.success("Successfully logged in!");
-      navigate('/');
+      // Different messages based on user role
+      if (user.role === 'admin') {
+        toast.success("Logged in as Administrator");
+        navigate('/admin');
+      } else if (user.role === 'delivery') {
+        toast.success("Logged in as Delivery Partner");
+        navigate('/delivery');
+      } else {
+        toast.success("Successfully logged in!");
+        navigate('/');
+      }
     } catch (err) {
       setError('Failed to sign in. Please check your credentials.');
       console.error(err);
@@ -130,6 +139,16 @@ export default function Login() {
                 </Button>
               </form>
             </Form>
+
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                <span className="font-medium">Special Logins:</span>
+              </p>
+              <ul className="text-xs text-muted-foreground">
+                <li>• Admin: bharathkumar21cse@gmail.com (password: 1234567890)</li>
+                <li>• Delivery: any email with "delivery" (password: minimum 6 characters)</li>
+              </ul>
+            </div>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">

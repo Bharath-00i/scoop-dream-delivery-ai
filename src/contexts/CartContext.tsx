@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { toast } from "@/components/ui/sonner";
-import { FlavorItem } from "@/types";
+import { toast } from "sonner";
+import { FlavorItem } from '@/types';
 
 export interface CartItem extends FlavorItem {
   quantity: number;
@@ -22,36 +22,42 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addToCart = (item: FlavorItem) => {
-    setItems(currentItems => {
-      const existingItem = currentItems.find(i => i.id === item.id);
-      if (existingItem) {
-        return currentItems.map(i => 
-          i.id === item.id 
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
-        );
-      }
-      return [...currentItems, { ...item, quantity: 1 }];
-    });
-    toast("Added to cart", {
-      description: `${item.name} has been added to your cart.`
-    });
+    const existingItem = items.find(i => i.id === item.id);
+    if (existingItem) {
+      setItems(
+        items.map(i => 
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        )
+      );
+      toast.success(`${item.name} quantity increased`, {
+        description: `You now have ${existingItem.quantity + 1} in your cart`
+      });
+    } else {
+      setItems([...items, { ...item, quantity: 1 }]);
+      toast.success(`${item.name} added to cart`, {
+        description: "Your item has been added to the cart"
+      });
+    }
   };
 
   const removeFromCart = (id: string) => {
-    setItems(currentItems => currentItems.filter(item => item.id !== id));
+    setItems(items.filter(item => item.id !== id));
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    if (quantity < 1) return;
-    setItems(currentItems =>
-      currentItems.map(item =>
-        item.id === id ? { ...item, quantity } : item
-      )
-    );
+    if (quantity <= 0) {
+      removeFromCart(id);
+      return;
+    }
+    
+    setItems(items.map(item => 
+      item.id === id ? { ...item, quantity } : item
+    ));
   };
-
-  const clearCart = () => setItems([]);
+  
+  const clearCart = () => {
+    setItems([]);
+  };
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -60,8 +66,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       items, 
       addToCart, 
       removeFromCart, 
-      updateQuantity, 
-      clearCart, 
+      updateQuantity,
+      clearCart,
       total 
     }}>
       {children}

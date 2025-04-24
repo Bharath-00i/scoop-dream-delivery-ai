@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
-import { Toaster } from "@/components/ui/sonner"; // Using Sonner for toasts
+import { Toaster } from "sonner"; 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
@@ -16,17 +16,34 @@ import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Wishlist from "./pages/Wishlist";  // Add Wishlist import
+import Wishlist from "./pages/Wishlist";
+import Admin from "./pages/Admin";
+import Delivery from "./pages/Delivery";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { currentUser, loading } = useAuth();
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  roleRequired?: 'admin' | 'delivery';
+}
+
+const ProtectedRoute = ({ children, roleRequired }: ProtectedRouteProps) => {
+  const { currentUser, loading, isAdmin, isDelivery } = useAuth();
   
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   
   if (!currentUser) {
     return <Navigate to="/login" />;
+  }
+
+  // Check roles if required
+  if (roleRequired) {
+    if (roleRequired === 'admin' && !isAdmin()) {
+      return <Navigate to="/" />;
+    }
+    if (roleRequired === 'delivery' && !isDelivery()) {
+      return <Navigate to="/" />;
+    }
   }
   
   return <>{children}</>;
@@ -35,7 +52,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster /> {/* Using only the Sonner toaster */}
+      <Toaster />
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
@@ -48,7 +65,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cart" element={<Cart />} />
-                <Route path="/wishlist" element={<Wishlist />} /> {/* Add Wishlist route */}
+                <Route path="/wishlist" element={<Wishlist />} />
                 <Route 
                   path="/checkout" 
                   element={
@@ -65,6 +82,22 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute roleRequired="admin">
+                      <Admin />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/delivery" 
+                  element={
+                    <ProtectedRoute roleRequired="delivery">
+                      <Delivery />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
@@ -76,4 +109,3 @@ const App = () => (
 );
 
 export default App;
-

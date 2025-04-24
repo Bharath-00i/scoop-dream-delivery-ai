@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 interface User {
   email: string;
   displayName?: string;
+  role: 'user' | 'admin' | 'delivery';
 }
 
 interface AuthContextType {
@@ -13,6 +14,8 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<User>;
   signup: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
+  isAdmin: () => boolean;
+  isDelivery: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -42,12 +45,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setLoading(false);
   }, []);
 
-  // Simple login implementation that stores user data in localStorage
+  // Login implementation that handles different user roles
   async function login(email: string, password: string) {
     console.log("Attempting login with:", email);
     
-    // For demo purposes, always succeed with valid form data
-    const user = { email };
+    // Admin login check
+    if (email === "bharathkumar21cse@gmail.com" && password === "1234567890") {
+      const user = { email, role: 'admin' as const };
+      localStorage.setItem('user', JSON.stringify(user));
+      setCurrentUser(user);
+      return user;
+    }
+    
+    // Delivery login check - simple check for any email containing "delivery"
+    if (email.includes("delivery") && password.length >= 6) {
+      const user = { email, role: 'delivery' as const };
+      localStorage.setItem('user', JSON.stringify(user));
+      setCurrentUser(user);
+      return user;
+    }
+    
+    // Regular user login
+    const user = { email, role: 'user' as const };
     localStorage.setItem('user', JSON.stringify(user));
     setCurrentUser(user);
     
@@ -59,7 +78,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log("Attempting Google login");
     
     // Demo implementation
-    const user = { email: 'google-user@example.com', displayName: 'Google User' };
+    const user = { 
+      email: 'google-user@example.com', 
+      displayName: 'Google User',
+      role: 'user' as const 
+    };
     localStorage.setItem('user', JSON.stringify(user));
     setCurrentUser(user);
     
@@ -71,7 +94,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log("Creating new user with:", email);
     
     // Demo implementation
-    const user = { email };
+    const user = { email, role: 'user' as const };
     localStorage.setItem('user', JSON.stringify(user));
     setCurrentUser(user);
     
@@ -84,13 +107,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setCurrentUser(null);
   }
 
+  // Role check functions
+  function isAdmin() {
+    return currentUser?.role === 'admin';
+  }
+
+  function isDelivery() {
+    return currentUser?.role === 'delivery';
+  }
+
   const value = {
     currentUser,
     loading,
     login,
     loginWithGoogle,
     signup,
-    logout
+    logout,
+    isAdmin,
+    isDelivery
   };
 
   return (
