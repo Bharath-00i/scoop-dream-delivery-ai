@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { FlavorItem } from "@/types";
 
 interface WishlistContextType {
@@ -14,13 +14,11 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 export const WishlistProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<FlavorItem[]>([]);
-  const { toast } = useToast();
 
   const addToWishlist = (item: FlavorItem) => {
     if (!items.find(i => i.id === item.id)) {
       setItems(current => [...current, item]);
-      toast({
-        title: "Added to wishlist",
+      toast("Added to wishlist", {
         description: `${item.name} has been added to your wishlist.`
       });
     }

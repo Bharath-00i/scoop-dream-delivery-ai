@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { FlavorItem } from "@/types";
 
 export interface CartItem extends FlavorItem {
@@ -20,7 +20,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
-  const { toast } = useToast();
 
   const addToCart = (item: FlavorItem) => {
     setItems(currentItems => {
@@ -34,8 +33,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       }
       return [...currentItems, { ...item, quantity: 1 }];
     });
-    toast({
-      title: "Added to cart",
+    toast("Added to cart", {
       description: `${item.name} has been added to your cart.`
     });
   };
