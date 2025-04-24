@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { FlavorItem } from "@/types";
 
 export interface CartItem extends FlavorItem {
   quantity: number;

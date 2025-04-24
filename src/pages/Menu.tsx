@@ -5,16 +5,7 @@ import Navigation from "@/components/Navigation";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-
-interface FlavorItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  available: number;
-  category: "regular" | "premium" | "seasonal";
-}
+import { FlavorItem } from "@/types";
 
 const Menu = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { useCart } from "@/contexts/CartContext";
+import { CartItem } from "@/contexts/CartContext";
 
 const Cart = () => {
   const { items, removeFromCart, updateQuantity, total } = useCart();

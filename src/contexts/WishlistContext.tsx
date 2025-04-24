@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { FlavorItem } from "@/types";
 
 interface WishlistContextType {
   items: FlavorItem[];
