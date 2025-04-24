@@ -38,10 +38,10 @@ export default function Login() {
       setIsLoading(true);
       setError('');
       
-      // For demo purposes, accept any valid form input
-      // This simulates a successful login without requiring Firebase validation
+      // Use the login function from AuthContext instead of directly manipulating localStorage
+      await login(values.email, values.password);
+      
       toast.success("Successfully logged in!");
-      localStorage.setItem('user', JSON.stringify({ email: values.email }));
       navigate('/');
     } catch (err) {
       setError('Failed to sign in. Please check your credentials.');
@@ -56,9 +56,10 @@ export default function Login() {
       setIsLoading(true);
       setError('');
       
-      // Simulate Google login for demo
+      // Use the loginWithGoogle function from AuthContext
+      await loginWithGoogle();
+      
       toast.success("Successfully logged in with Google!");
-      localStorage.setItem('user', JSON.stringify({ email: 'google-user@example.com' }));
       navigate('/');
     } catch (err) {
       setError('Failed to sign in with Google.');

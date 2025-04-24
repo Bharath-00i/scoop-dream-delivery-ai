@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 
 interface User {
   email: string;
+  displayName?: string;
 }
 
 interface AuthContextType {
@@ -58,7 +59,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log("Attempting Google login");
     
     // Demo implementation
-    const user = { email: 'google-user@example.com' };
+    const user = { email: 'google-user@example.com', displayName: 'Google User' };
     localStorage.setItem('user', JSON.stringify(user));
     setCurrentUser(user);
     
