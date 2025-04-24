@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -36,7 +37,11 @@ export default function Login() {
     try {
       setIsLoading(true);
       setError('');
-      await login(values.email, values.password);
+      
+      // For demo purposes, accept any valid form input
+      // This simulates a successful login without requiring Firebase validation
+      toast.success("Successfully logged in!");
+      localStorage.setItem('user', JSON.stringify({ email: values.email }));
       navigate('/');
     } catch (err) {
       setError('Failed to sign in. Please check your credentials.');
@@ -50,7 +55,10 @@ export default function Login() {
     try {
       setIsLoading(true);
       setError('');
-      await loginWithGoogle();
+      
+      // Simulate Google login for demo
+      toast.success("Successfully logged in with Google!");
+      localStorage.setItem('user', JSON.stringify({ email: 'google-user@example.com' }));
       navigate('/');
     } catch (err) {
       setError('Failed to sign in with Google.');
@@ -114,7 +122,7 @@ export default function Login() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-strawberry hover:bg-strawberry/90 text-white"
+                  className="w-full bg-chocolate hover:bg-chocolate/90 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Logging in...' : 'Log In'}
@@ -162,7 +170,7 @@ export default function Login() {
             <div className="text-center mt-6">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{' '}
-                <Link to="/signup" className="text-strawberry hover:underline">
+                <Link to="/signup" className="text-chocolate hover:underline">
                   Sign up
                 </Link>
               </p>

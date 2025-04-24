@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,7 +143,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
           </p>
           <Button 
             onClick={checkDeliveryAvailability}
-            className="bg-strawberry hover:bg-strawberry/90 text-white"
+            className="bg-chocolate hover:bg-chocolate/90 text-white"
           >
             Check My Location
           </Button>
@@ -151,7 +152,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
       
       {status === 'checking' && (
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-strawberry"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-chocolate"></div>
           <p className="mt-4">Checking your location...</p>
         </div>
       )}
@@ -197,7 +198,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
             <h4 className="text-lg font-semibold text-green-700 mb-2">Delivery Available!</h4>
             <p>You are {formatDistance(distance)} away from our shop.</p>
           </div>
-          <Button className="bg-strawberry hover:bg-strawberry/90 text-white w-full">
+          <Button className="bg-chocolate hover:bg-chocolate/90 text-white w-full">
             Order Now
           </Button>
         </motion.div>
@@ -237,7 +238,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
 
       {isMobile ? (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent>
+          <DrawerContent className="bg-white">
             <DrawerHeader>
               <DrawerTitle>Enter Your Location</DrawerTitle>
               <DrawerDescription>
@@ -292,7 +293,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
                   <DrawerFooter>
                     <Button 
                       type="submit" 
-                      className="bg-strawberry hover:bg-strawberry/90 text-white w-full"
+                      className="bg-chocolate hover:bg-chocolate/90 text-white w-full"
                     >
                       Check Delivery Availability
                     </Button>
@@ -307,7 +308,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
         </Drawer>
       ) : (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
+          <DialogContent className="bg-white">
             <DialogHeader>
               <DialogTitle>Enter Your Location</DialogTitle>
               <DialogDescription>
@@ -361,7 +362,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
                 <DialogFooter>
                   <Button 
                     type="submit" 
-                    className="bg-strawberry hover:bg-strawberry/90 text-white"
+                    className="bg-chocolate hover:bg-chocolate/90 text-white"
                   >
                     Check Delivery Availability
                   </Button>

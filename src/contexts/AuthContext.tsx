@@ -1,16 +1,9 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  User, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  signInWithPopup, 
-  createUserWithEmailAndPassword, 
-  signOut,
-  AuthError
-} from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
-import { FirebaseError } from 'firebase/app';
+
+interface User {
+  email: string;
+}
 
 interface AuthContextType {
   currentUser: User | null;
@@ -40,68 +33,54 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Firebase observer for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    // Check local storage for user data on initial load
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  // Login with email and password
+  // Simple login implementation that stores user data in localStorage
   async function login(email: string, password: string) {
-    try {
-      console.log("Attempting login with:", email);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Login successful for:", userCredential.user.uid);
-      return userCredential.user;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    }
+    console.log("Attempting login with:", email);
+    
+    // For demo purposes, always succeed with valid form data
+    const user = { email };
+    localStorage.setItem('user', JSON.stringify(user));
+    setCurrentUser(user);
+    
+    return user;
   }
 
-  // Login with Google
+  // Google login simulation
   async function loginWithGoogle() {
-    try {
-      console.log("Attempting Google login");
-      const userCredential = await signInWithPopup(auth, googleProvider);
-      console.log("Google login successful for:", userCredential.user.uid);
-      return userCredential.user;
-    } catch (error) {
-      console.error("Google login error details:", error);
-      throw error;
-    }
+    console.log("Attempting Google login");
+    
+    // Demo implementation
+    const user = { email: 'google-user@example.com' };
+    localStorage.setItem('user', JSON.stringify(user));
+    setCurrentUser(user);
+    
+    return user;
   }
 
-  // Sign up with email and password
+  // Simple signup implementation
   async function signup(email: string, password: string) {
-    try {
-      console.log("Attempting to create user with:", { email, passwordLength: password.length });
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("User created successfully:", userCredential.user.uid);
-      return userCredential.user;
-    } catch (error) {
-      console.error("Error in signup function details:", error);
-      
-      // Enhanced error logging for debugging
-      if (error instanceof FirebaseError) {
-        console.error("Firebase error code:", error.code);
-        console.error("Firebase error message:", error.message);
-        
-        if (error.code === 'auth/api-key-not-valid') {
-          console.error("Firebase API key is invalid. Please check your firebase configuration.");
-        }
-      }
-      
-      throw error; // Re-throw to handle in the component
-    }
+    console.log("Creating new user with:", email);
+    
+    // Demo implementation
+    const user = { email };
+    localStorage.setItem('user', JSON.stringify(user));
+    setCurrentUser(user);
+    
+    return user;
   }
 
-  // Logout
+  // Logout functionality
   async function logout() {
-    await signOut(auth);
+    localStorage.removeItem('user');
+    setCurrentUser(null);
   }
 
   const value = {
