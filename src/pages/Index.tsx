@@ -150,7 +150,7 @@ const Index = () => {
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+              <h4 className="text-lg font-semibold mb-4 text-strawberry">Quick Links</h4>
               <ul className="space-y-2">
                 <li><Link to="/menu" className="hover:text-strawberry">Our Menu</Link></li>
                 <li><Link to="/about" className="hover:text-strawberry">About Us</Link></li>
@@ -159,13 +159,13 @@ const Index = () => {
             </div>
             
             <div>
-              <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
+              <h4 className="text-lg font-semibold mb-4 text-mint">Contact Us</h4>
               <address className="not-italic text-gray-300 space-y-2">
                 <p>Kuttagam, Avinashi</p>
                 <p>Tiruppur, Tamil Nadu 641654</p>
                 <p>India</p>
-                <p>Phone: +91 98765 43210</p>
-                <p>Email: hello@scoopsdream.com</p>
+                <p className="hover:text-mint">Phone: +91 98765 43210</p>
+                <p className="hover:text-mint">Email: hello@scoopsdream.com</p>
               </address>
             </div>
           </div>
@@ -180,3 +180,4 @@ const Index = () => {
 };
 
 export default Index;
+
