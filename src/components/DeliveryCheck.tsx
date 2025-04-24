@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,7 +59,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
   const [distance, setDistance] = useState<number | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [open, setOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 640px)");
+  const isMobile = useIsMobile();
 
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationFormSchema),
@@ -71,7 +70,6 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
     }
   });
 
-  // Handle status changes
   useEffect(() => {
     if (onStatusChange && (status === 'available' || status === 'unavailable')) {
       onStatusChange(status);
@@ -80,7 +78,6 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
     }
   }, [status, onStatusChange]);
 
-  // Check delivery availability based on user's location
   const checkDeliveryAvailability = async () => {
     setIsChecking(true);
     setStatus('checking');
@@ -88,7 +85,6 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
     try {
       const location = await getCurrentLocation();
       
-      // Calculate distance between user and shop
       const dist = calculateDistance(
         location.lat,
         location.lng,
@@ -98,7 +94,6 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
       
       setDistance(dist);
       
-      // Check if within delivery radius
       if (isWithinDeliveryRadius(location.lat, location.lng)) {
         setStatus('available');
       } else {
@@ -116,10 +111,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
     setIsChecking(true);
     setStatus('checking');
     
-    // Simulate geolocation based on form data
-    // In a real app, you would use a geocoding service
     setTimeout(() => {
-      // Random distance calculation for demo purposes
       const randomDistance = Math.random() * 8;
       setDistance(randomDistance);
       
@@ -243,7 +235,6 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
         </div>
       )}
 
-      {/* Location drawer or dialog depending on device */}
       {isMobile ? (
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent>
