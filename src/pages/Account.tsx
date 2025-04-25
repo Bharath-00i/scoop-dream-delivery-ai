@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Navigation from "@/components/Navigation";
@@ -6,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Order {
   id: string;
@@ -18,8 +18,8 @@ interface Order {
 const Account = () => {
   const { currentUser, logout, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses">("profile");
+  const navigate = useNavigate();
   
-  // Mock order history data - in a real app, this would come from Firestore
   const [orders] = useState<Order[]>([
     {
       id: "order-1",
@@ -56,7 +56,8 @@ const Account = () => {
   const [profileData, setProfileData] = useState({
     displayName: currentUser?.displayName || "",
     email: currentUser?.email || "",
-    phone: "555-123-4567",
+    phone: currentUser?.phone || "",
+    location: currentUser?.location || "",
   });
   
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,10 +73,13 @@ const Account = () => {
     // Update the profile in AuthContext
     updateProfile({
       ...currentUser!,
-      displayName: profileData.displayName
+      displayName: profileData.displayName,
+      phone: profileData.phone,
+      location: profileData.location
     });
-    console.log("Profile update:", profileData);
+    
     toast.success("Profile updated successfully!");
+    navigate('/menu');
   };
 
   return (
@@ -165,6 +169,18 @@ const Account = () => {
                     name="phone"
                     type="tel"
                     value={profileData.phone}
+                    onChange={handleProfileChange}
+                    className="w-full p-3 border rounded-lg border-gray-300"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="location">Location</Label>
+                  <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    value={profileData.location}
                     onChange={handleProfileChange}
                     className="w-full p-3 border rounded-lg border-gray-300"
                   />

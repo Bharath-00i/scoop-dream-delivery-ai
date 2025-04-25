@@ -16,6 +16,8 @@ const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  location: z.string().min(5, 'Please enter your full address'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -35,6 +37,8 @@ export default function Signup() {
       email: '',
       password: '',
       confirmPassword: '',
+      phone: '',
+      location: '',
     },
   });
 
@@ -43,18 +47,19 @@ export default function Signup() {
       setIsLoading(true);
       setError('');
       
-      // Simulate account creation (without Firebase)
-      console.log('Creating account for:', values.name, values.email);
+      // Store user data in localStorage with additional fields
+      const userData = {
+        email: values.email,
+        displayName: values.name,
+        phone: values.phone,
+        location: values.location,
+        role: 'user'
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
       
-      // Add a small delay to simulate network request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success toast
-      toast("Account created successfully!", {
+      toast.success("Account created successfully!", {
         description: "You can now log in with your credentials",
         duration: 3000,
-        className: "bg-gradient-to-r from-ice-pink to-ice-peach shadow-lg border-2 border-white/20",
-        position: "top-center",
       });
       
       // Redirect to login page after a short delay
@@ -64,6 +69,7 @@ export default function Signup() {
     } catch (err) {
       console.error("Signup error:", err);
       setError('Failed to create an account. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -113,6 +119,34 @@ export default function Signup() {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input placeholder="your@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your phone number" {...field} type="tel" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your full address" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

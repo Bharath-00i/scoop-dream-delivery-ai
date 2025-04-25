@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 interface User {
   email: string;
   displayName?: string;
+  phone?: string;
+  location?: string;
   role: 'user' | 'admin' | 'delivery';
 }
 
