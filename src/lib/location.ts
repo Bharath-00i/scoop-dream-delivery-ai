@@ -1,9 +1,7 @@
-
-
 // Maximum delivery radius in kilometers
-export const MAX_DELIVERY_RADIUS = 5;
+export const MAX_DELIVERY_RADIUS = 50;
 
-// Shop location in Kuttagam, Avinashi, Tiruppur, Tamil Nadu, India
+// Shop location in Avinashi, Tiruppur, Tamil Nadu, India
 export const SHOP_LOCATION = {
   lat: 11.197708, // Avinashi, Tiruppur coordinates
   lng: 77.268123
@@ -92,4 +90,3 @@ export function formatDistance(distance: number): string {
   }
   return `${distance.toFixed(1)} km`;
 }
-

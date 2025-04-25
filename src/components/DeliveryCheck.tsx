@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,7 +112,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
     setStatus('checking');
     
     setTimeout(() => {
-      const randomDistance = Math.random() * 8;
+      const randomDistance = Math.random() * 80;
       setDistance(randomDistance);
       
       if (randomDistance <= MAX_DELIVERY_RADIUS) {
@@ -139,7 +138,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
         <div>
           <p className="mb-4 text-muted-foreground">
             Check if we can deliver ice cream to your location.
-            Our delivery is available within {MAX_DELIVERY_RADIUS} km of our shop in Kuttagam, Avinashi.
+            Our delivery is available within {MAX_DELIVERY_RADIUS} km of our shop in Avinashi.
           </p>
           <Button 
             onClick={checkDeliveryAvailability}
@@ -215,7 +214,7 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
             <div className="text-4xl mb-2">😢</div>
             <h4 className="text-lg font-semibold text-red-700 mb-2">Sorry, No Delivery</h4>
             <p>You are {formatDistance(distance)} away from our shop.</p>
-            <p className="mt-2 text-sm">We only deliver within {MAX_DELIVERY_RADIUS} km of Kuttagam, Avinashi.</p>
+            <p className="mt-2 text-sm">We only deliver within {MAX_DELIVERY_RADIUS} km of Avinashi.</p>
           </div>
           <Button variant="outline" className="w-full">
             Find Stores

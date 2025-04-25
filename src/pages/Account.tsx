@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface Order {
   id: string;
@@ -70,6 +71,7 @@ const Account = () => {
     e.preventDefault();
     // In a real app, would update profile in Firebase Auth and Firestore
     console.log("Profile update:", profileData);
+    toast.success("Profile updated successfully!");
   };
 
   return (
