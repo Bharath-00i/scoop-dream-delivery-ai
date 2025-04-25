@@ -1,4 +1,3 @@
-
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -26,7 +25,6 @@ const queryClient = new QueryClient();
 const AppRoutes = () => {
   const { currentUser, loading, isDelivery } = useAuth();
   
-  // Special routing for delivery users - they can only access delivery and menu pages
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -36,13 +34,12 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/menu" element={<Menu />} />
         <Route path="/delivery" element={<Delivery />} />
-        {/* Redirect all other routes to delivery dashboard for delivery users */}
+        <Route path="/account" element={<Account />} />
         <Route path="*" element={<Navigate to="/delivery" />} />
       </Routes>
     );
   }
   
-  // Regular routing for non-delivery users
   return (
     <Routes>
       <Route path="/" element={<Index />} />

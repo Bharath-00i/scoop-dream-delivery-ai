@@ -1,12 +1,11 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { MapPin, Check, X } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SHOP_LOCATION } from '@/lib/location';
 import DeliveryMap from '@/components/DeliveryMap';
@@ -30,60 +29,29 @@ interface OrderItem {
 
 export default function Delivery() {
   const { currentUser, isDelivery } = useAuth();
-  const [orders, setOrders] = useState<OrderItem[]>([
-    {
-      id: "order1",
-      customerName: "John Smith",
-      address: "123 Main St, Avinashi",
-      items: ["Classic Vanilla (2)", "Double Chocolate (1)"],
-      total: 12.47,
-      status: 'pending',
-      customerLocation: {
-        lat: 11.197708,
-        lng: 77.268123
-      }
-    },
-    {
-      id: "order2",
-      customerName: "Sarah Johnson",
-      address: "456 Park Avenue, Avinashi",
-      items: ["Fresh Strawberry (1)", "Mint Chocolate Chip (2)"],
-      total: 14.98,
-      status: 'pending',
-      customerLocation: {
-        lat: 11.199245,
-        lng: 77.271632
-      }
-    },
-    {
-      id: "order3",
-      customerName: "Raj Patel",
-      address: "789 Grove Street, Avinashi",
-      items: ["Mango Tango Sorbet (2)", "Cookie Dough (1)"],
-      total: 15.47,
-      status: 'pending',
-      customerLocation: {
-        lat: 11.193525,
-        lng: 77.265789
-      }
-    }
-  ]);
+  const [orders, setOrders] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
 
   if (!currentUser || !isDelivery()) {
     return <Navigate to="/login" />;
   }
 
-  const handleAccept = (orderId: string) => {
-    // Get the delivery person's name from current user
-    const deliveryPersonName = currentUser.displayName || "Delivery Partner";
+  useEffect(() => {
+    const fetchOrders = () => {
+      setOrders([]);
+    };
+
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 30000);
     
-    // Get phone from user profile or use a default
-    // Note: We're using optional chaining with the 'as any' type assertion as a workaround
-    // since 'phone' might not be in the User type yet
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleAccept = (orderId: string) => {
+    const deliveryPersonName = currentUser.displayName || "Delivery Partner";
     const phoneNumber = (currentUser as any).phoneNumber || 
                        (currentUser as any).phone || 
-                       "555-789-1234";
+                       "";
 
     const deliveryPerson = {
       name: deliveryPersonName,
