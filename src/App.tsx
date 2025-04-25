@@ -27,6 +27,50 @@ interface ProtectedRouteProps {
   roleRequired?: 'admin' | 'delivery';
 }
 
+// Create an AppRoutes component that uses the useAuth hook
+const AppRoutes = () => {
+  const { currentUser, loading, isDelivery } = useAuth();
+  
+  // Special routing for delivery users - they can only access delivery and menu pages
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
+  if (currentUser && isDelivery()) {
+    return (
+      <Routes>
+        <Route path="/menu" element={<Menu />} />
+        <Route 
+          path="/delivery" 
+          element={<Delivery />} 
+        />
+        {/* Redirect all other routes to delivery dashboard for delivery users */}
+        <Route path="*" element={<Navigate to="/delivery" />} />
+      </Routes>
+    );
+  }
+  
+  // Regular routing for non-delivery users
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/menu" element={<Menu />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/account" element={<Account />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/delivery" element={<Delivery />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+// Create a ProtectedRoute component that uses the useAuth hook
 const ProtectedRoute = ({ children, roleRequired }: ProtectedRouteProps) => {
   const { currentUser, loading, isAdmin, isDelivery } = useAuth();
   
@@ -50,77 +94,19 @@ const ProtectedRoute = ({ children, roleRequired }: ProtectedRouteProps) => {
 };
 
 const App = () => {
-  const { currentUser, loading, isDelivery } = useAuth();
-  
-  // Special routing for delivery users - they can only access delivery and menu pages
-  const DeliveryRoutes = () => {
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-    
-    if (currentUser && isDelivery()) {
-      return (
-        <Routes>
-          <Route path="/menu" element={<Menu />} />
-          <Route 
-            path="/delivery" 
-            element={
-              <ProtectedRoute roleRequired="delivery">
-                <Delivery />
-              </ProtectedRoute>
-            } 
-          />
-          {/* Redirect all other routes to delivery dashboard for delivery users */}
-          <Route path="*" element={<Navigate to="/delivery" />} />
-        </Routes>
-      );
-    }
-    
-    // Regular routing for non-delivery users
-    return (
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/menu" element={<Menu />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/account" element={<Account />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/wishlist" element={<Wishlist />} />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute roleRequired="admin">
-              <Admin />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/delivery" 
-          element={
-            <ProtectedRoute roleRequired="delivery">
-              <Delivery />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    );
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <BrowserRouter>
-                <DeliveryRoutes />
-              </BrowserRouter>
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <AppRoutes />
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );

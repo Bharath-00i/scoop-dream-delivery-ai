@@ -38,7 +38,10 @@ const DeliveryMap = ({ shopLocation, customerLocation, apiKey }: DeliveryMapProp
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v11',
         bounds: bounds,
-        padding: 50
+        // Using fitBoundsOptions instead of direct padding property
+        fitBoundsOptions: {
+          padding: 50
+        }
       });
 
       // Add markers
