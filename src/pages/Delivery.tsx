@@ -51,9 +51,19 @@ export default function Delivery() {
   }
 
   const handleAccept = (orderId: string) => {
+    // Get the delivery person's name from current user
+    const deliveryPersonName = currentUser.displayName || "Delivery Partner";
+    
+    // Get phone from user profile or use a default
+    // Note: We're using optional chaining with the 'as any' type assertion as a workaround
+    // since 'phone' might not be in the User type yet
+    const phoneNumber = (currentUser as any).phoneNumber || 
+                       (currentUser as any).phone || 
+                       "555-789-1234";
+
     const deliveryPerson = {
-      name: currentUser.displayName || "Delivery Partner",
-      phone: currentUser.phone || "555-789-1234" // You should add phone to user profile
+      name: deliveryPersonName,
+      phone: phoneNumber
     };
 
     setOrders(orders.map(order => 
