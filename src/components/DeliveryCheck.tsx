@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
   getCurrentLocation, 
   isWithinDeliveryRadius, 
@@ -197,8 +198,8 @@ export default function DeliveryCheck({ onStatusChange }: DeliveryCheckProps) {
             <h4 className="text-lg font-semibold text-green-700 mb-2">Delivery Available!</h4>
             <p>You are {formatDistance(distance)} away from our shop.</p>
           </div>
-          <Button className="bg-chocolate hover:bg-chocolate/90 text-white w-full">
-            Order Now
+          <Button className="bg-chocolate hover:bg-chocolate/90 text-white w-full" asChild>
+            <Link to="/menu">Order Now</Link>
           </Button>
         </motion.div>
       )}

@@ -42,6 +42,30 @@ export default function Delivery() {
         lat: 11.197708,
         lng: 77.268123
       }
+    },
+    {
+      id: "order2",
+      customerName: "Sarah Johnson",
+      address: "456 Park Avenue, Avinashi",
+      items: ["Fresh Strawberry (1)", "Mint Chocolate Chip (2)"],
+      total: 14.98,
+      status: 'pending',
+      customerLocation: {
+        lat: 11.199245,
+        lng: 77.271632
+      }
+    },
+    {
+      id: "order3",
+      customerName: "Raj Patel",
+      address: "789 Grove Street, Avinashi",
+      items: ["Mango Tango Sorbet (2)", "Cookie Dough (1)"],
+      total: 15.47,
+      status: 'pending',
+      customerLocation: {
+        lat: 11.193525,
+        lng: 77.265789
+      }
     }
   ]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);

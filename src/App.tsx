@@ -22,11 +22,6 @@ import Delivery from "./pages/Delivery";
 
 const queryClient = new QueryClient();
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  roleRequired?: 'admin' | 'delivery';
-}
-
 // Create an AppRoutes component that uses the useAuth hook
 const AppRoutes = () => {
   const { currentUser, loading, isDelivery } = useAuth();
@@ -40,10 +35,7 @@ const AppRoutes = () => {
     return (
       <Routes>
         <Route path="/menu" element={<Menu />} />
-        <Route 
-          path="/delivery" 
-          element={<Delivery />} 
-        />
+        <Route path="/delivery" element={<Delivery />} />
         {/* Redirect all other routes to delivery dashboard for delivery users */}
         <Route path="*" element={<Navigate to="/delivery" />} />
       </Routes>
@@ -70,44 +62,21 @@ const AppRoutes = () => {
   );
 };
 
-// Create a ProtectedRoute component that uses the useAuth hook
-const ProtectedRoute = ({ children, roleRequired }: ProtectedRouteProps) => {
-  const { currentUser, loading, isAdmin, isDelivery } = useAuth();
-  
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  
-  if (!currentUser) {
-    return <Navigate to="/login" />;
-  }
-
-  // Check roles if required
-  if (roleRequired) {
-    if (roleRequired === 'admin' && !isAdmin()) {
-      return <Navigate to="/" />;
-    }
-    if (roleRequired === 'delivery' && !isDelivery()) {
-      return <Navigate to="/" />;
-    }
-  }
-  
-  return <>{children}</>;
-};
-
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
-          <AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
             <CartProvider>
               <WishlistProvider>
                 <AppRoutes />
               </WishlistProvider>
             </CartProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+          </TooltipProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };
