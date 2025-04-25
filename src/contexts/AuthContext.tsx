@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface User {
@@ -16,6 +15,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAdmin: () => boolean;
   isDelivery: () => boolean;
+  updateProfile: (updatedUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -107,6 +107,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setCurrentUser(null);
   }
 
+  // Update user profile function
+  function updateProfile(updatedUser: User) {
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setCurrentUser(updatedUser);
+  }
+
   // Role check functions
   function isAdmin() {
     return currentUser?.role === 'admin';
@@ -124,7 +130,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signup,
     logout,
     isAdmin,
-    isDelivery
+    isDelivery,
+    updateProfile
   };
 
   return (

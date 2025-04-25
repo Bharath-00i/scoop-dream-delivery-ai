@@ -16,7 +16,7 @@ interface Order {
 }
 
 const Account = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<"profile" | "orders" | "addresses">("profile");
   
   // Mock order history data - in a real app, this would come from Firestore
@@ -69,7 +69,11 @@ const Account = () => {
   
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, would update profile in Firebase Auth and Firestore
+    // Update the profile in AuthContext
+    updateProfile({
+      ...currentUser!,
+      displayName: profileData.displayName
+    });
     console.log("Profile update:", profileData);
     toast.success("Profile updated successfully!");
   };
