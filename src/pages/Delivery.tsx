@@ -9,10 +9,14 @@ import { SHOP_LOCATION } from '@/lib/location';
 import DeliveryMap from '@/components/DeliveryMap';
 import OrderList from '@/components/delivery/OrderList';
 import { useDeliveryOrders } from '@/hooks/useDeliveryOrders';
+import TestOrderGenerator from '@/components/delivery/TestOrderGenerator';
+import { Button } from '@/components/ui/button';
+import { Package } from 'lucide-react';
 
 export default function Delivery() {
   const { currentUser, isDelivery } = useAuth();
   const [authChecked, setAuthChecked] = useState(false);
+  const [showTestTools, setShowTestTools] = useState(false);
   
   // Handle authentication check as a state effect
   useEffect(() => {
@@ -79,6 +83,25 @@ export default function Delivery() {
                 type="completed"
               />
             </TabsContent>
+
+            {/* Test Order Generator (toggle button) */}
+            <div className="lg:col-span-2 flex justify-center mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowTestTools(!showTestTools)}
+                className="flex gap-2 items-center"
+              >
+                <Package size={16} />
+                {showTestTools ? "Hide Test Tools" : "Show Test Tools"}
+              </Button>
+            </div>
+            
+            {/* Test Order Generator Component */}
+            {showTestTools && (
+              <div className="lg:col-span-2 mt-2">
+                <TestOrderGenerator />
+              </div>
+            )}
             
             {selectedOrder && (
               <div className="lg:col-span-2">
