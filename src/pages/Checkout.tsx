@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { collection, addDoc, GeoPoint } from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
+import { getCurrentLocation, isWithinDeliveryRadius, SHOP_LOCATION } from "@/lib/location";
 
 const Checkout = () => {
   const { items, total: cartTotal, clearCart } = useCart();
@@ -32,6 +33,9 @@ const Checkout = () => {
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [locationVerified, setLocationVerified] = useState(false);
+  const [isCheckingLocation, setIsCheckingLocation] = useState(false);
+  const [locationError, setLocationError] = useState("");
   
   const subtotal = cartTotal;
   const deliveryFee = 2.99;
@@ -51,6 +55,32 @@ const Checkout = () => {
     }
   };
   
+  const verifyLocation = async () => {
+    if (!formData.address.trim()) {
+      setLocationError("Please enter your address first");
+      return;
+    }
+    
+    setIsCheckingLocation(true);
+    setLocationError("");
+    
+    try {
+      const location = await getCurrentLocation();
+      
+      if (isWithinDeliveryRadius(location.lat, location.lng)) {
+        setLocationVerified(true);
+        toast.success("Location verified! You're within our delivery area.");
+      } else {
+        setLocationError("Sorry, we don't deliver to your location yet.");
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+      setLocationError("Could not verify your location. Please try again or contact support.");
+    } finally {
+      setIsCheckingLocation(false);
+    }
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -63,6 +93,12 @@ const Checkout = () => {
     
     if (Object.keys(errors).length > 0) {
       setFormErrors({ ...formErrors, ...errors });
+      return;
+    }
+    
+    // Check if location is verified
+    if (!locationVerified) {
+      toast.error("Please verify your location before placing your order");
       return;
     }
     
@@ -268,6 +304,25 @@ const Checkout = () => {
                   {formErrors.address && <p className="text-red-500 text-sm">{formErrors.address}</p>}
                 </div>
                 
+                {/* Location verification */}
+                <div className="p-4 bg-ice-pink/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <p className={`text-sm ${locationVerified ? 'text-green-600' : 'text-gray-600'}`}>
+                      {locationVerified ? '✓ Location verified' : 'Verify your location to continue'}
+                    </p>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={verifyLocation}
+                      disabled={isCheckingLocation || locationVerified}
+                      className="bg-white"
+                    >
+                      {isCheckingLocation ? 'Checking...' : locationVerified ? 'Verified' : 'Verify Location'}
+                    </Button>
+                  </div>
+                  {locationError && <p className="mt-2 text-red-500 text-sm">{locationError}</p>}
+                </div>
+                
                 <div className="grid gap-2">
                   <Label htmlFor="paymentMethod">Payment Method</Label>
                   <div className="flex flex-wrap gap-4 mt-2">
@@ -313,8 +368,10 @@ const Checkout = () => {
               
               <Button 
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full mt-8 bg-strawberry hover:bg-strawberry/90 text-white text-lg py-6"
+                disabled={isSubmitting || !locationVerified}
+                className={`w-full mt-8 text-white text-lg py-6 ${locationVerified 
+                  ? 'bg-strawberry hover:bg-strawberry/90' 
+                  : 'bg-gray-400 cursor-not-allowed'}`}
               >
                 {isSubmitting ? "Processing..." : "Complete Order"}
               </Button>

@@ -22,7 +22,6 @@ export function useDeliveryOrders(userId: string | undefined) {
     console.log("Fetching orders for delivery person ID:", userId);
     
     // Create query reference for all pending orders, regardless of source
-    // Removed any filters that might be limiting which orders are displayed
     const pendingOrdersQuery = query(
       collection(firestore, "orders"), 
       where("status", "==", "pending"),
@@ -48,7 +47,8 @@ export function useDeliveryOrders(userId: string | undefined) {
       // Update orders state by combining with accepted orders
       setOrders(currentOrders => {
         const acceptedOrders = currentOrders.filter(order => order.status === "accepted");
-        return [...pendingOrders, ...acceptedOrders];
+        const deliveredOrders = currentOrders.filter(order => order.status === "delivered");
+        return [...pendingOrders, ...acceptedOrders, ...deliveredOrders];
       });
       
       setLoading(false);
@@ -69,7 +69,8 @@ export function useDeliveryOrders(userId: string | undefined) {
       // Update orders state by combining with pending orders
       setOrders(currentOrders => {
         const pendingOrders = currentOrders.filter(order => order.status === "pending");
-        return [...pendingOrders, ...acceptedOrders];
+        const deliveredOrders = currentOrders.filter(order => order.status === "delivered");
+        return [...pendingOrders, ...acceptedOrders, ...deliveredOrders];
       });
       
       setLoading(false);
