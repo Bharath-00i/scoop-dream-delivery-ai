@@ -24,6 +24,7 @@ export interface OrderItem {
     name: string;
     phone: string;
   };
+  deliveryPersonId?: string;
   email?: string;
   phone?: string;
   paymentMethod?: string;

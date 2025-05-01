@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface User {
@@ -6,6 +7,7 @@ interface User {
   phone?: string;
   location?: string;
   role: 'user' | 'admin' | 'delivery';
+  uid: string; // Add uid property
 }
 
 interface AuthContextType {
@@ -53,7 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Admin login check
     if (email === "bharathkumar21cse@gmail.com" && password === "1234567890") {
-      const user = { email, role: 'admin' as const };
+      const user = { email, role: 'admin' as const, uid: 'admin-' + Date.now() };
       localStorage.setItem('user', JSON.stringify(user));
       setCurrentUser(user);
       return user;
@@ -61,14 +63,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Delivery login check - simple check for any email containing "delivery"
     if (email.includes("delivery") && password.length >= 6) {
-      const user = { email, role: 'delivery' as const };
+      const user = { email, role: 'delivery' as const, uid: 'delivery-' + Date.now() };
       localStorage.setItem('user', JSON.stringify(user));
       setCurrentUser(user);
       return user;
     }
     
     // Regular user login
-    const user = { email, role: 'user' as const };
+    const user = { email, role: 'user' as const, uid: 'user-' + Date.now() };
     localStorage.setItem('user', JSON.stringify(user));
     setCurrentUser(user);
     
@@ -83,7 +85,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const user = { 
       email: 'google-user@example.com', 
       displayName: 'Google User',
-      role: 'user' as const 
+      role: 'user' as const,
+      uid: 'google-' + Date.now()
     };
     localStorage.setItem('user', JSON.stringify(user));
     setCurrentUser(user);
@@ -96,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log("Creating new user with:", email);
     
     // Demo implementation
-    const user = { email, role: 'user' as const };
+    const user = { email, role: 'user' as const, uid: 'user-' + Date.now() };
     localStorage.setItem('user', JSON.stringify(user));
     setCurrentUser(user);
     

@@ -80,7 +80,7 @@ const Checkout = () => {
       };
       
       // Create order in Firestore
-      const orderRef = await addDoc(collection(firestore, "orders"), {
+      const orderData = {
         customerName: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -92,7 +92,9 @@ const Checkout = () => {
         paymentMethod: formData.paymentMethod,
         customerLocation: customerLocation,
         userId: currentUser ? currentUser.uid : "guest"
-      });
+      };
+      
+      const orderRef = await addDoc(collection(firestore, "orders"), orderData);
       
       // Show success toast
       toast.success("Order placed successfully!", {

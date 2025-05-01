@@ -21,10 +21,11 @@ export default function Delivery() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Don't run this effect if there's no user
+    // Move conditional return after all hooks have been called
     if (!currentUser) return;
     
     setLoading(true);
+    const userId = currentUser.uid;
     
     // Create query references for pending orders and orders assigned to this delivery person
     const pendingOrdersQuery = query(
@@ -36,7 +37,7 @@ export default function Delivery() {
     const acceptedOrdersQuery = query(
       collection(firestore, "orders"),
       where("status", "==", "accepted"),
-      where("deliveryPersonId", "==", currentUser.uid)
+      where("deliveryPersonId", "==", userId)
     );
     
     // Set up real-time listeners for both queries
@@ -88,7 +89,7 @@ export default function Delivery() {
         const deliveredOrdersQuery = query(
           collection(firestore, "orders"),
           where("status", "==", "delivered"),
-          where("deliveryPersonId", "==", currentUser.uid),
+          where("deliveryPersonId", "==", userId),
           orderBy("createdAt", "desc")
         );
         
