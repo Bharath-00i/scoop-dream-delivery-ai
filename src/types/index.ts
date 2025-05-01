@@ -28,6 +28,6 @@ export interface OrderItem {
   email?: string;
   phone?: string;
   paymentMethod?: string;
-  createdAt?: Date;
+  createdAt: any; // Changed from Date to any to handle Firestore timestamps
   userId?: string;
 }
