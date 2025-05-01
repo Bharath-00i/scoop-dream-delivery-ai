@@ -20,20 +20,32 @@ export default function Delivery() {
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // First check if the user is authenticated
+  if (!currentUser || !isDelivery()) {
+    return <Navigate to="/login" />;
+  }
+
   useEffect(() => {
-    // Move conditional return after all hooks have been called
-    if (!currentUser) return;
+    // Ensure we have a valid user ID before proceeding
+    if (!currentUser || !currentUser.uid) {
+      console.log("No valid user ID found");
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     const userId = currentUser.uid;
     
-    // Create query references for pending orders and orders assigned to this delivery person
+    console.log("Fetching orders for delivery person ID:", userId);
+    
+    // Create query reference for pending orders (no filter by deliveryPersonId)
     const pendingOrdersQuery = query(
       collection(firestore, "orders"), 
       where("status", "==", "pending"),
       orderBy("createdAt", "desc")
     );
     
+    // Create query for accepted orders by this delivery person
     const acceptedOrdersQuery = query(
       collection(firestore, "orders"),
       where("status", "==", "accepted"),
@@ -121,13 +133,14 @@ export default function Delivery() {
     };
   }, [currentUser]); // Only re-run when currentUser changes
 
-  // Move the conditional return after all hooks have been called
-  if (!currentUser || !isDelivery()) {
-    return <Navigate to="/login" />;
-  }
-
   const handleAccept = async (orderId: string) => {
     try {
+      // Make sure we have a current user with a uid
+      if (!currentUser || !currentUser.uid) {
+        toast.error("Authentication error. Please log in again.");
+        return;
+      }
+
       const deliveryPersonName = currentUser.displayName || "Delivery Partner";
       const phoneNumber = (currentUser as any).phoneNumber || 
                          (currentUser as any).phone || 
