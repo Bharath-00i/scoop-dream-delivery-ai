@@ -10,6 +10,8 @@ import { MapPin, Check } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SHOP_LOCATION } from '@/lib/location';
 import DeliveryMap from '@/components/DeliveryMap';
+import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
+import { firestore } from '@/lib/firebase';
 
 interface OrderItem {
   id: string;
@@ -32,57 +34,131 @@ export default function Delivery() {
   const { currentUser, isDelivery } = useAuth();
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrders = () => {
-      setOrders([]);
+    const fetchOrders = async () => {
+      if (!currentUser) return;
+      
+      try {
+        setLoading(true);
+        
+        // Get orders that are either pending (not accepted by any delivery person)
+        // or already accepted by this delivery person
+        const ordersRef = collection(firestore, "orders");
+        const pendingOrdersQuery = query(
+          ordersRef, 
+          where("status", "==", "pending")
+        );
+        
+        const acceptedOrdersQuery = query(
+          ordersRef,
+          where("status", "==", "accepted"),
+          where("deliveryPersonId", "==", currentUser.email)
+        );
+        
+        // Fetch both pending and accepted orders
+        const [pendingSnapshot, acceptedSnapshot] = await Promise.all([
+          getDocs(pendingOrdersQuery),
+          getDocs(acceptedOrdersQuery)
+        ]);
+        
+        // Process pending orders
+        const pendingOrders = pendingSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as OrderItem[];
+        
+        // Process accepted orders
+        const acceptedOrders = acceptedSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as OrderItem[];
+        
+        // Combine both sets of orders
+        const allOrders = [...pendingOrders, ...acceptedOrders];
+        
+        console.log("Fetched orders:", allOrders);
+        setOrders(allOrders);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        toast.error("Failed to fetch orders");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchOrders();
     const interval = setInterval(fetchOrders, 30000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [currentUser]);
 
   // Move the conditional return after all hooks have been called
   if (!currentUser || !isDelivery()) {
     return <Navigate to="/login" />;
   }
 
-  const handleAccept = (orderId: string) => {
-    const deliveryPersonName = currentUser.displayName || "Delivery Partner";
-    const phoneNumber = (currentUser as any).phoneNumber || 
-                       (currentUser as any).phone || 
-                       "";
+  const handleAccept = async (orderId: string) => {
+    try {
+      const deliveryPersonName = currentUser.displayName || "Delivery Partner";
+      const phoneNumber = (currentUser as any).phoneNumber || 
+                         (currentUser as any).phone || 
+                         "";
 
-    const deliveryPerson = {
-      name: deliveryPersonName,
-      phone: phoneNumber
-    };
+      const deliveryPerson = {
+        name: deliveryPersonName,
+        phone: phoneNumber
+      };
+      
+      // Update order in Firestore
+      const orderRef = doc(firestore, "orders", orderId);
+      await updateDoc(orderRef, {
+        status: 'accepted',
+        deliveryPerson,
+        deliveryPersonId: currentUser.email
+      });
 
-    setOrders(orders.map(order => 
-      order.id === orderId 
-        ? { 
-            ...order, 
-            status: 'accepted',
-            deliveryPerson
-          } 
-        : order
-    ));
-    
-    const acceptedOrder = orders.find(order => order.id === orderId);
-    setSelectedOrder(acceptedOrder || null);
-    toast.success("Order accepted! Navigate to customer location.");
+      // Update local state
+      setOrders(orders.map(order => 
+        order.id === orderId 
+          ? { 
+              ...order, 
+              status: 'accepted',
+              deliveryPerson
+            } 
+          : order
+      ));
+      
+      const acceptedOrder = orders.find(order => order.id === orderId);
+      setSelectedOrder(acceptedOrder || null);
+      toast.success("Order accepted! Navigate to customer location.");
+    } catch (error) {
+      console.error("Error accepting order:", error);
+      toast.error("Failed to accept order. Please try again.");
+    }
   };
 
-  const handleDeliver = (orderId: string) => {
-    setOrders(orders.map(order => 
-      order.id === orderId 
-        ? { ...order, status: 'delivered' } 
-        : order
-    ));
-    toast.success("Order marked as delivered!");
-    setSelectedOrder(null);
+  const handleDeliver = async (orderId: string) => {
+    try {
+      // Update order in Firestore
+      const orderRef = doc(firestore, "orders", orderId);
+      await updateDoc(orderRef, {
+        status: 'delivered'
+      });
+      
+      // Update local state
+      setOrders(orders.map(order => 
+        order.id === orderId 
+          ? { ...order, status: 'delivered' } 
+          : order
+      ));
+      toast.success("Order marked as delivered!");
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error("Error delivering order:", error);
+      toast.error("Failed to mark order as delivered. Please try again.");
+    }
   };
 
   const currentOrders = orders.filter(
@@ -118,7 +194,12 @@ export default function Delivery() {
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-6">Current Orders</h2>
                 
-                {currentOrders.length === 0 ? (
+                {loading ? (
+                  <div className="text-center py-10">
+                    <div className="animate-spin w-8 h-8 border-4 border-strawberry border-t-transparent rounded-full mx-auto mb-2"></div>
+                    <p className="text-gray-500">Loading orders...</p>
+                  </div>
+                ) : currentOrders.length === 0 ? (
                   <p className="text-center py-10 text-gray-500">No orders available at the moment</p>
                 ) : (
                   <div className="space-y-4">
@@ -192,7 +273,12 @@ export default function Delivery() {
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-6">Completed Orders</h2>
                 
-                {completedOrders.length === 0 ? (
+                {loading ? (
+                  <div className="text-center py-10">
+                    <div className="animate-spin w-8 h-8 border-4 border-strawberry border-t-transparent rounded-full mx-auto mb-2"></div>
+                    <p className="text-gray-500">Loading orders...</p>
+                  </div>
+                ) : completedOrders.length === 0 ? (
                   <p className="text-center py-10 text-gray-500">No completed orders yet</p>
                 ) : (
                   <div className="space-y-4">
