@@ -33,10 +33,6 @@ export default function Delivery() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
 
-  if (!currentUser || !isDelivery()) {
-    return <Navigate to="/login" />;
-  }
-
   useEffect(() => {
     const fetchOrders = () => {
       setOrders([]);
@@ -47,6 +43,11 @@ export default function Delivery() {
     
     return () => clearInterval(interval);
   }, []);
+
+  // Move the conditional return after all hooks have been called
+  if (!currentUser || !isDelivery()) {
+    return <Navigate to="/login" />;
+  }
 
   const handleAccept = (orderId: string) => {
     const deliveryPersonName = currentUser.displayName || "Delivery Partner";
