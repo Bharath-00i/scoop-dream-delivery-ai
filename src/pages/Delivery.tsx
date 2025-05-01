@@ -19,12 +19,14 @@ export default function Delivery() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // First check if the user is authenticated
-  if (!currentUser || !isDelivery()) {
-    return <Navigate to="/login" />;
-  }
-
+  const [authChecked, setAuthChecked] = useState(false);
+  
+  // First, handle authentication check as a state effect
+  useEffect(() => {
+    // This will run once and set the authChecked state
+    setAuthChecked(true);
+  }, []);
+  
   useEffect(() => {
     // Ensure we have a valid user ID before proceeding
     if (!currentUser || !currentUser.uid) {
@@ -187,6 +189,11 @@ export default function Delivery() {
       toast.error("Failed to mark order as delivered. Please try again.");
     }
   };
+
+  // Move authentication check here, after all hooks are used
+  if (authChecked && (!currentUser || !isDelivery())) {
+    return <Navigate to="/login" />;
+  }
 
   const currentOrders = orders.filter(
     order => order.status === 'pending' || order.status === 'accepted'
