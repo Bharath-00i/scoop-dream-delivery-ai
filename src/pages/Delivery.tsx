@@ -10,25 +10,9 @@ import { MapPin, Check } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SHOP_LOCATION } from '@/lib/location';
 import DeliveryMap from '@/components/DeliveryMap';
-import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, orderBy, onSnapshot } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-
-interface OrderItem {
-  id: string;
-  customerName: string;
-  address: string;
-  items: string[];
-  total: number;
-  status: 'pending' | 'accepted' | 'delivered';
-  customerLocation?: {
-    lat: number;
-    lng: number;
-  };
-  deliveryPerson?: {
-    name: string;
-    phone: string;
-  };
-}
+import { OrderItem } from '@/types';
 
 export default function Delivery() {
   const { currentUser, isDelivery } = useAuth();
@@ -37,62 +21,104 @@ export default function Delivery() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      if (!currentUser) return;
+    // Don't run this effect if there's no user
+    if (!currentUser) return;
+    
+    setLoading(true);
+    
+    // Create query references for pending orders and orders assigned to this delivery person
+    const pendingOrdersQuery = query(
+      collection(firestore, "orders"), 
+      where("status", "==", "pending"),
+      orderBy("createdAt", "desc")
+    );
+    
+    const acceptedOrdersQuery = query(
+      collection(firestore, "orders"),
+      where("status", "==", "accepted"),
+      where("deliveryPersonId", "==", currentUser.uid)
+    );
+    
+    // Set up real-time listeners for both queries
+    const pendingUnsubscribe = onSnapshot(pendingOrdersQuery, (snapshot) => {
+      const pendingOrders = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as OrderItem[];
       
+      console.log("Pending orders updated:", pendingOrders);
+      
+      // Update orders state by combining with accepted orders
+      setOrders(currentOrders => {
+        const acceptedOrders = currentOrders.filter(order => order.status === "accepted");
+        return [...pendingOrders, ...acceptedOrders];
+      });
+      
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching pending orders:", error);
+      toast.error("Failed to fetch pending orders");
+      setLoading(false);
+    });
+    
+    const acceptedUnsubscribe = onSnapshot(acceptedOrdersQuery, (snapshot) => {
+      const acceptedOrders = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as OrderItem[];
+      
+      console.log("Accepted orders updated:", acceptedOrders);
+      
+      // Update orders state by combining with pending orders
+      setOrders(currentOrders => {
+        const pendingOrders = currentOrders.filter(order => order.status === "pending");
+        return [...pendingOrders, ...acceptedOrders];
+      });
+      
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching accepted orders:", error);
+      toast.error("Failed to fetch accepted orders");
+      setLoading(false);
+    });
+    
+    // Also fetch delivered orders once (no need for real-time updates)
+    const fetchDeliveredOrders = async () => {
       try {
-        setLoading(true);
-        
-        // Get orders that are either pending (not accepted by any delivery person)
-        // or already accepted by this delivery person
-        const ordersRef = collection(firestore, "orders");
-        const pendingOrdersQuery = query(
-          ordersRef, 
-          where("status", "==", "pending")
+        const deliveredOrdersQuery = query(
+          collection(firestore, "orders"),
+          where("status", "==", "delivered"),
+          where("deliveryPersonId", "==", currentUser.uid),
+          orderBy("createdAt", "desc")
         );
         
-        const acceptedOrdersQuery = query(
-          ordersRef,
-          where("status", "==", "accepted"),
-          where("deliveryPersonId", "==", currentUser.email)
-        );
-        
-        // Fetch both pending and accepted orders
-        const [pendingSnapshot, acceptedSnapshot] = await Promise.all([
-          getDocs(pendingOrdersQuery),
-          getDocs(acceptedOrdersQuery)
-        ]);
-        
-        // Process pending orders
-        const pendingOrders = pendingSnapshot.docs.map(doc => ({
+        const snapshot = await getDocs(deliveredOrdersQuery);
+        const deliveredOrders = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         })) as OrderItem[];
         
-        // Process accepted orders
-        const acceptedOrders = acceptedSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as OrderItem[];
+        console.log("Delivered orders fetched:", deliveredOrders);
         
-        // Combine both sets of orders
-        const allOrders = [...pendingOrders, ...acceptedOrders];
-        
-        console.log("Fetched orders:", allOrders);
-        setOrders(allOrders);
+        // Combine with existing orders
+        setOrders(currentOrders => {
+          // Filter out any delivered orders already in the state to avoid duplicates
+          const nonDeliveredOrders = currentOrders.filter(order => order.status !== "delivered");
+          return [...nonDeliveredOrders, ...deliveredOrders];
+        });
       } catch (error) {
-        console.error("Error fetching orders:", error);
-        toast.error("Failed to fetch orders");
-      } finally {
-        setLoading(false);
+        console.error("Error fetching delivered orders:", error);
       }
     };
-
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 30000);
     
-    return () => clearInterval(interval);
-  }, [currentUser]);
+    fetchDeliveredOrders();
+    
+    // Clean up listeners when component unmounts
+    return () => {
+      pendingUnsubscribe();
+      acceptedUnsubscribe();
+    };
+  }, [currentUser]); // Only re-run when currentUser changes
 
   // Move the conditional return after all hooks have been called
   if (!currentUser || !isDelivery()) {
@@ -116,19 +142,10 @@ export default function Delivery() {
       await updateDoc(orderRef, {
         status: 'accepted',
         deliveryPerson,
-        deliveryPersonId: currentUser.email
+        deliveryPersonId: currentUser.uid
       });
 
-      // Update local state
-      setOrders(orders.map(order => 
-        order.id === orderId 
-          ? { 
-              ...order, 
-              status: 'accepted',
-              deliveryPerson
-            } 
-          : order
-      ));
+      // The order state will be automatically updated by the onSnapshot listener
       
       const acceptedOrder = orders.find(order => order.id === orderId);
       setSelectedOrder(acceptedOrder || null);
@@ -147,12 +164,8 @@ export default function Delivery() {
         status: 'delivered'
       });
       
-      // Update local state
-      setOrders(orders.map(order => 
-        order.id === orderId 
-          ? { ...order, status: 'delivered' } 
-          : order
-      ));
+      // The order state will be automatically updated by the onSnapshot listener
+      
       toast.success("Order marked as delivered!");
       setSelectedOrder(null);
     } catch (error) {
