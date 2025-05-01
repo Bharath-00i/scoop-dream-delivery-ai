@@ -21,7 +21,8 @@ export function useDeliveryOrders(userId: string | undefined) {
     setLoading(true);
     console.log("Fetching orders for delivery person ID:", userId);
     
-    // Create query reference for pending orders (no filter by deliveryPersonId)
+    // Create query reference for all pending orders, regardless of source
+    // Removed any filters that might be limiting which orders are displayed
     const pendingOrdersQuery = query(
       collection(firestore, "orders"), 
       where("status", "==", "pending"),

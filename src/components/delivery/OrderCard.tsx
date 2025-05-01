@@ -10,6 +10,12 @@ interface OrderCardProps {
 }
 
 export default function OrderCard({ order, onAccept, onDeliver }: OrderCardProps) {
+  // Safely display order information with fallbacks for any missing fields
+  const orderItems = Array.isArray(order.items) ? order.items : [];
+  const orderTotal = typeof order.total === 'number' ? order.total.toFixed(2) : '0.00';
+  const customerName = order.customerName || 'Customer';
+  const address = order.address || 'No address provided';
+
   return (
     <div 
       className={`border rounded-lg p-4 ${
@@ -19,14 +25,14 @@ export default function OrderCard({ order, onAccept, onDeliver }: OrderCardProps
     >
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="font-medium">{order.customerName}</h3>
+          <h3 className="font-medium">{customerName}</h3>
           <p className="text-sm text-gray-600 flex items-center mt-1">
             <MapPin className="w-4 h-4 mr-1" />
-            {order.address}
+            {address}
           </p>
         </div>
         <div className="text-right">
-          <p className="font-bold">${order.total.toFixed(2)}</p>
+          <p className="font-bold">${orderTotal}</p>
           <span className={`text-xs px-2 py-1 rounded-full ${
             order.status === 'pending' ? 'bg-blue-100 text-blue-800' :
             'bg-green-100 text-green-800'
@@ -39,7 +45,7 @@ export default function OrderCard({ order, onAccept, onDeliver }: OrderCardProps
       <div className="mt-3">
         <p className="text-sm font-medium">Items:</p>
         <ul className="list-disc list-inside text-sm text-gray-600">
-          {order.items.map((item, idx) => (
+          {orderItems.map((item, idx) => (
             <li key={idx}>{item}</li>
           ))}
         </ul>
