@@ -4,6 +4,7 @@ import OrderCard from "./OrderCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Package, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 interface OrderListProps {
   orders: OrderItem[];
@@ -15,6 +16,7 @@ interface OrderListProps {
 
 export default function OrderList({ orders, loading, onAccept, onDeliver, type }: OrderListProps) {
   const title = type === "current" ? "Current Orders" : "Completed Orders";
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   
   // Filter orders based on type
   const filteredOrders = type === "current" 
@@ -27,8 +29,15 @@ export default function OrderList({ orders, loading, onAccept, onDeliver, type }
   }
   
   const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    setLastRefresh(new Date());
     window.location.reload();
   };
+
+  // Force refresh when component mounts or when refreshed
+  useEffect(() => {
+    console.log("OrderList for", type, "updated at", lastRefresh.toISOString());
+  }, [type, lastRefresh]);
   
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">

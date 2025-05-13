@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
-import { collection, addDoc, GeoPoint } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCurrentLocation, isWithinDeliveryRadius, SHOP_LOCATION } from "@/lib/location";
@@ -66,12 +66,15 @@ const Checkout = () => {
     
     try {
       const location = await getCurrentLocation();
+      console.log("Location verification - Got coordinates:", location);
       
       if (isWithinDeliveryRadius(location.lat, location.lng)) {
         setLocationVerified(true);
         toast.success("Location verified! You're within our delivery area.");
+        console.log("Location verification successful - within delivery radius");
       } else {
         setLocationError("Sorry, we don't deliver to your location yet.");
+        console.log("Location verification failed - outside delivery radius");
       }
     } catch (error) {
       console.error('Error getting location:', error);
@@ -99,6 +102,7 @@ const Checkout = () => {
     // IMPORTANT: Check if location is verified before proceeding
     if (!locationVerified) {
       toast.error("Please verify your location before placing your order");
+      console.log("Order submission blocked - location not verified");
       return;
     }
     
@@ -139,20 +143,34 @@ const Checkout = () => {
         userId: currentUser ? currentUser.uid : "guest"
       };
       
-      const orderRef = await addDoc(collection(firestore, "orders"), orderData);
+      console.log("Creating order with data:", orderData);
       
-      // Show success toast
-      toast.success("Order placed successfully!", {
-        description: "A delivery person will accept your order soon.",
-      });
-      
-      // Clear cart
-      clearCart();
-      
-      // Navigate to home page after a short delay
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
+      try {
+        const orderRef = await addDoc(collection(firestore, "orders"), orderData);
+        console.log("Order created successfully with ID:", orderRef.id);
+        
+        // Show success toast
+        toast.success("Order placed successfully!", {
+          description: "A delivery person will accept your order soon.",
+        });
+        
+        // Clear cart
+        clearCart();
+        
+        // Navigate to home page after a short delay
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      } catch (firestoreError) {
+        console.error("Firestore error details:", firestoreError);
+        if (firestoreError.code) {
+          console.error("Error code:", firestoreError.code);
+        }
+        if (firestoreError.message) {
+          console.error("Error message:", firestoreError.message);
+        }
+        throw firestoreError;
+      }
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Failed to place order. Please try again.");

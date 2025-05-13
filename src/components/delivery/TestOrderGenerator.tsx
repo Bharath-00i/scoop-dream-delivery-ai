@@ -47,19 +47,29 @@ export default function TestOrderGenerator() {
 
       console.log("Creating test order with data:", orderData);
 
-      // Add to Firestore
-      const docRef = await addDoc(collection(firestore, "orders"), orderData);
-      console.log("Test order successfully created with ID:", docRef.id);
-      toast.success(`Test order created with ID: ${docRef.id}`);
-      
-      // Force a refresh of the data
-      // The real-time listener should pick this up, but just in case
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      // Add to Firestore with detailed error logging
+      try {
+        const docRef = await addDoc(collection(firestore, "orders"), orderData);
+        console.log("Test order successfully created with ID:", docRef.id);
+        toast.success(`Test order created with ID: ${docRef.id}`);
+        
+        // Force a refresh of the data
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } catch (firestoreError) {
+        console.error("Firestore error details:", firestoreError);
+        if (firestoreError.code) {
+          console.error("Error code:", firestoreError.code);
+        }
+        if (firestoreError.message) {
+          console.error("Error message:", firestoreError.message);
+        }
+        throw firestoreError;
+      }
     } catch (error) {
       console.error("Error creating test order:", error);
-      toast.error("Failed to create test order");
+      toast.error("Failed to create test order. Check console for details.");
     } finally {
       setIsGenerating(false);
     }
