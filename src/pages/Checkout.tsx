@@ -96,7 +96,7 @@ const Checkout = () => {
       return;
     }
     
-    // Check if location is verified
+    // IMPORTANT: Check if location is verified before proceeding
     if (!locationVerified) {
       toast.error("Please verify your location before placing your order");
       return;
@@ -132,7 +132,7 @@ const Checkout = () => {
         address: formData.address,
         items: orderItems,
         total: total,
-        status: "pending",
+        status: "pending", // All new orders start as pending
         createdAt: new Date(),
         paymentMethod: formData.paymentMethod,
         customerLocation: customerLocation,

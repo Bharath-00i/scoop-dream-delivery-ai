@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, updateDoc, doc, orderBy, onSnapshot } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
@@ -21,101 +20,46 @@ export function useDeliveryOrders(userId: string | undefined) {
     setLoading(true);
     console.log("Fetching orders for delivery person ID:", userId);
     
-    // Create query reference for ALL pending orders
-    // Remove any filters that would restrict which pending orders are shown
-    const pendingOrdersQuery = query(
-      collection(firestore, "orders"), 
-      where("status", "==", "pending"),
+    // Set up real-time listener for ALL orders in the system
+    const ordersQuery = query(
+      collection(firestore, "orders"),
       orderBy("createdAt", "desc")
     );
     
-    // Create query for accepted orders by this delivery person
-    const acceptedOrdersQuery = query(
-      collection(firestore, "orders"),
-      where("status", "==", "accepted"),
-      where("deliveryPersonId", "==", userId)
-    );
-    
-    // Set up real-time listeners for both queries
-    const pendingUnsubscribe = onSnapshot(pendingOrdersQuery, (snapshot) => {
-      const pendingOrders = snapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+      const fetchedOrders = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as OrderItem[];
       
-      console.log("Pending orders updated:", pendingOrders.length, "orders found");
+      console.log("Orders updated:", fetchedOrders.length, "orders found");
       
-      // Update orders state by combining with accepted orders
-      setOrders(currentOrders => {
-        const acceptedOrders = currentOrders.filter(order => order.status === "accepted");
-        const deliveredOrders = currentOrders.filter(order => order.status === "delivered");
-        return [...pendingOrders, ...acceptedOrders, ...deliveredOrders];
-      });
+      // Process orders based on their status
+      const pendingOrders = fetchedOrders.filter(order => order.status === "pending");
+      const acceptedOrders = fetchedOrders.filter(order => 
+        order.status === "accepted" && order.deliveryPersonId === userId
+      );
+      const deliveredOrders = fetchedOrders.filter(order => 
+        order.status === "delivered" && order.deliveryPersonId === userId
+      );
       
+      console.log("Pending orders:", pendingOrders.length);
+      console.log("Accepted orders for this user:", acceptedOrders.length);
+      console.log("Delivered orders for this user:", deliveredOrders.length);
+      
+      // Combine orders in the desired order
+      const combinedOrders = [...pendingOrders, ...acceptedOrders, ...deliveredOrders];
+      setOrders(combinedOrders);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching pending orders:", error);
-      toast.error("Failed to fetch pending orders");
+      console.error("Error fetching orders:", error);
+      toast.error("Failed to fetch orders");
       setLoading(false);
     });
     
-    const acceptedUnsubscribe = onSnapshot(acceptedOrdersQuery, (snapshot) => {
-      const acceptedOrders = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as OrderItem[];
-      
-      console.log("Accepted orders updated:", acceptedOrders.length, "orders found");
-      
-      // Update orders state by combining with pending orders
-      setOrders(currentOrders => {
-        const pendingOrders = currentOrders.filter(order => order.status === "pending");
-        const deliveredOrders = currentOrders.filter(order => order.status === "delivered");
-        return [...pendingOrders, ...acceptedOrders, ...deliveredOrders];
-      });
-      
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching accepted orders:", error);
-      toast.error("Failed to fetch accepted orders");
-      setLoading(false);
-    });
-    
-    // Also fetch delivered orders once (no need for real-time updates)
-    const fetchDeliveredOrders = async () => {
-      try {
-        const deliveredOrdersQuery = query(
-          collection(firestore, "orders"),
-          where("status", "==", "delivered"),
-          where("deliveryPersonId", "==", userId),
-          orderBy("createdAt", "desc")
-        );
-        
-        const snapshot = await getDocs(deliveredOrdersQuery);
-        const deliveredOrders = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as OrderItem[];
-        
-        console.log("Delivered orders fetched:", deliveredOrders.length, "orders found");
-        
-        // Combine with existing orders
-        setOrders(currentOrders => {
-          // Filter out any delivered orders already in the state to avoid duplicates
-          const nonDeliveredOrders = currentOrders.filter(order => order.status !== "delivered");
-          return [...nonDeliveredOrders, ...deliveredOrders];
-        });
-      } catch (error) {
-        console.error("Error fetching delivered orders:", error);
-      }
-    };
-    
-    fetchDeliveredOrders();
-    
-    // Clean up listeners when component unmounts
+    // Clean up the listener when component unmounts
     return () => {
-      pendingUnsubscribe();
-      acceptedUnsubscribe();
+      unsubscribe();
     };
   }, [userId]); // Only re-run when userId changes
 
