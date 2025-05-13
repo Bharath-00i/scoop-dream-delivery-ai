@@ -108,12 +108,21 @@ const Checkout = () => {
       // Format items for order
       const orderItems = items.map(item => `${item.name} (${item.quantity})`);
       
-      // Create mock geo location for the customer (in a real app, you would use a geocoding API)
-      // This is just a random location near the shop for demonstration purposes
-      const customerLocation = {
-        lat: 34.0522 + (Math.random() * 0.02 - 0.01), // Random offset from Los Angeles
-        lng: -118.2437 + (Math.random() * 0.02 - 0.01)
-      };
+      // Get the user's real location or use a fallback if we can't
+      let customerLocation;
+      try {
+        const location = await getCurrentLocation();
+        customerLocation = {
+          lat: location.lat, 
+          lng: location.lng
+        };
+      } catch (error) {
+        // Fallback to a random location near the shop (only for testing)
+        customerLocation = {
+          lat: SHOP_LOCATION.lat + (Math.random() * 0.01 - 0.005),
+          lng: SHOP_LOCATION.lng + (Math.random() * 0.01 - 0.005)
+        };
+      }
       
       // Create order in Firestore
       const orderData = {
