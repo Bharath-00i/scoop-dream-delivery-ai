@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, updateDoc, doc, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, orderBy, onSnapshot, Timestamp, limit } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { OrderItem } from '@/types';
@@ -10,28 +10,75 @@ export function useDeliveryOrders(userId: string | undefined) {
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Function to manually fetch orders as a backup
+  const fetchOrdersManually = async () => {
+    try {
+      console.log("Manually fetching orders as backup");
+      const ordersQuery = query(
+        collection(firestore, "orders"),
+        orderBy("createdAt", "desc"),
+        limit(50)
+      );
+      
+      const snapshot = await getDocs(ordersQuery);
+      const fetchedOrders = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as OrderItem[];
+      
+      console.log("Manual fetch complete. Orders found:", fetchedOrders.length);
+      if (fetchedOrders.length > 0) {
+        console.log("Sample order data:", fetchedOrders[0]);
+        setOrders(fetchedOrders);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error in manual fetch:", error);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
-    console.log("Fetching ALL orders for delivery dashboard");
+    console.log("⭐ Starting orders fetch for delivery dashboard");
     
-    // Set up real-time listener for ALL orders in the system without filtering
+    // Set up real-time listener for ALL orders in the system
     const ordersQuery = query(
       collection(firestore, "orders"),
       orderBy("createdAt", "desc")
     );
     
     const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
-      const fetchedOrders = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as OrderItem[];
+      console.log("🔄 Snapshot received, documents count:", snapshot.docs.length);
       
-      console.log("Total orders fetched:", fetchedOrders.length);
+      const fetchedOrders = snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Convert Firestore timestamp to JS Date if needed
+        const createdAt = data.createdAt instanceof Timestamp 
+          ? data.createdAt.toDate() 
+          : data.createdAt;
+          
+        return {
+          id: doc.id,
+          ...data,
+          createdAt
+        };
+      }) as OrderItem[];
+      
+      console.log("📊 Total orders fetched:", fetchedOrders.length);
       
       if (fetchedOrders.length === 0) {
-        console.log("No orders found in the database");
+        console.log("⚠️ No orders found in the database");
+        // Try manual fetch after 2 seconds if no orders found
+        setTimeout(fetchOrdersManually, 2000);
       } else {
-        console.log("Orders found! First order:", fetchedOrders[0]);
+        console.log("✅ Orders found! First order:", fetchedOrders[0]);
+        
+        // Debug order statuses
+        const pendingCount = fetchedOrders.filter(o => o.status === 'pending').length;
+        const acceptedCount = fetchedOrders.filter(o => o.status === 'accepted').length;
+        const deliveredCount = fetchedOrders.filter(o => o.status === 'delivered').length;
+        
+        console.log(`📊 Order status counts - Pending: ${pendingCount}, Accepted: ${acceptedCount}, Delivered: ${deliveredCount}`);
       }
       
       // Show ALL orders in the dashboard regardless of status
@@ -41,12 +88,14 @@ export function useDeliveryOrders(userId: string | undefined) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
       setLoading(false);
+      // Try manual fetch as fallback
+      fetchOrdersManually();
     });
     
     return () => {
       unsubscribe();
     };
-  }, []); // Remove userId dependency to fetch ALL orders regardless of user
+  }, []); // No dependencies to fetch ALL orders
 
   const handleAccept = async (orderId: string, currentUser: any) => {
     try {
@@ -63,6 +112,8 @@ export function useDeliveryOrders(userId: string | undefined) {
         name: deliveryPersonName,
         phone: phoneNumber
       };
+      
+      console.log(`Accepting order ${orderId} by user ${currentUser.uid}`);
       
       // Update order in Firestore
       const orderRef = doc(firestore, "orders", orderId);
@@ -83,6 +134,8 @@ export function useDeliveryOrders(userId: string | undefined) {
 
   const handleDeliver = async (orderId: string) => {
     try {
+      console.log(`Marking order ${orderId} as delivered`);
+      
       // Update order in Firestore
       const orderRef = doc(firestore, "orders", orderId);
       await updateDoc(orderRef, {

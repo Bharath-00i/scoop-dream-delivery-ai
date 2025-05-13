@@ -2,6 +2,8 @@
 import { OrderItem } from "@/types";
 import OrderCard from "./OrderCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Package, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface OrderListProps {
   orders: OrderItem[];
@@ -24,9 +26,23 @@ export default function OrderList({ orders, loading, onAccept, onDeliver, type }
     console.log(`First ${type} order:`, filteredOrders[0]);
   }
   
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+  
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">{title}</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">{title}</h2>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleRefresh}
+          className="flex items-center gap-1"
+        >
+          <RefreshCw className="w-4 h-4" /> Refresh
+        </Button>
+      </div>
       
       {loading ? (
         <div className="space-y-4">
@@ -35,9 +51,19 @@ export default function OrderList({ orders, loading, onAccept, onDeliver, type }
           <Skeleton className="h-24 w-full" />
         </div>
       ) : filteredOrders.length === 0 ? (
-        <p className="text-center py-10 text-gray-500">
-          {type === "current" ? "No orders available at the moment" : "No completed orders yet"}
-        </p>
+        <div className="text-center py-10">
+          <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-gray-500 mb-4">
+            {type === "current" ? "No orders available at the moment" : "No completed orders yet"}
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefresh}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" /> Refresh Orders
+          </Button>
+        </div>
       ) : (
         <div className="space-y-4">
           {filteredOrders.map((order) => (
