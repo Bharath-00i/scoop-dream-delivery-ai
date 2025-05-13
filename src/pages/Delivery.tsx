@@ -23,7 +23,7 @@ export default function Delivery() {
     setAuthChecked(true);
   }, []);
 
-  const userId = currentUser?.uid;
+  // We don't pass userId to useDeliveryOrders anymore since we want ALL orders
   const {
     orders,
     loading,
@@ -31,7 +31,9 @@ export default function Delivery() {
     setSelectedOrder,
     handleAccept,
     handleDeliver
-  } = useDeliveryOrders(userId);
+  } = useDeliveryOrders(undefined);
+
+  console.log("Delivery page - Total orders:", orders.length);
 
   // Accept order wrapper function
   const acceptOrder = (orderId: string) => {

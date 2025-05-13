@@ -1,6 +1,7 @@
 
 import { OrderItem } from "@/types";
 import OrderCard from "./OrderCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface OrderListProps {
   orders: OrderItem[];
@@ -12,18 +13,26 @@ interface OrderListProps {
 
 export default function OrderList({ orders, loading, onAccept, onDeliver, type }: OrderListProps) {
   const title = type === "current" ? "Current Orders" : "Completed Orders";
+  
+  // Filter orders based on type
   const filteredOrders = type === "current" 
     ? orders.filter(order => order.status === 'pending' || order.status === 'accepted')
     : orders.filter(order => order.status === 'delivered');
+  
+  console.log(`${type} orders count:`, filteredOrders.length);
+  if (filteredOrders.length > 0) {
+    console.log(`First ${type} order:`, filteredOrders[0]);
+  }
   
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
       <h2 className="text-2xl font-bold mb-6">{title}</h2>
       
       {loading ? (
-        <div className="text-center py-10">
-          <div className="animate-spin w-8 h-8 border-4 border-strawberry border-t-transparent rounded-full mx-auto mb-2"></div>
-          <p className="text-gray-500">Loading orders...</p>
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
         </div>
       ) : filteredOrders.length === 0 ? (
         <p className="text-center py-10 text-gray-500">

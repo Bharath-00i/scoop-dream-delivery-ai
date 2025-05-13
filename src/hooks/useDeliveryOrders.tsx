@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, updateDoc, doc, orderBy, onSnapshot } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
@@ -10,17 +11,10 @@ export function useDeliveryOrders(userId: string | undefined) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ensure we have a valid user ID before proceeding
-    if (!userId) {
-      console.log("No valid user ID found");
-      setLoading(false);
-      return;
-    }
-    
     setLoading(true);
-    console.log("Fetching orders for delivery person ID:", userId);
+    console.log("Fetching ALL orders for delivery dashboard");
     
-    // Set up real-time listener for ALL orders in the system
+    // Set up real-time listener for ALL orders in the system without filtering
     const ordersQuery = query(
       collection(firestore, "orders"),
       orderBy("createdAt", "desc")
@@ -32,24 +26,16 @@ export function useDeliveryOrders(userId: string | undefined) {
         ...doc.data()
       })) as OrderItem[];
       
-      console.log("Orders updated:", fetchedOrders.length, "orders found");
+      console.log("Total orders fetched:", fetchedOrders.length);
       
-      // Process orders based on their status
-      const pendingOrders = fetchedOrders.filter(order => order.status === "pending");
-      const acceptedOrders = fetchedOrders.filter(order => 
-        order.status === "accepted" && order.deliveryPersonId === userId
-      );
-      const deliveredOrders = fetchedOrders.filter(order => 
-        order.status === "delivered" && order.deliveryPersonId === userId
-      );
+      if (fetchedOrders.length === 0) {
+        console.log("No orders found in the database");
+      } else {
+        console.log("Orders found! First order:", fetchedOrders[0]);
+      }
       
-      console.log("Pending orders:", pendingOrders.length);
-      console.log("Accepted orders for this user:", acceptedOrders.length);
-      console.log("Delivered orders for this user:", deliveredOrders.length);
-      
-      // Combine orders in the desired order
-      const combinedOrders = [...pendingOrders, ...acceptedOrders, ...deliveredOrders];
-      setOrders(combinedOrders);
+      // Show ALL orders in the dashboard regardless of status
+      setOrders(fetchedOrders);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching orders:", error);
@@ -57,11 +43,10 @@ export function useDeliveryOrders(userId: string | undefined) {
       setLoading(false);
     });
     
-    // Clean up the listener when component unmounts
     return () => {
       unsubscribe();
     };
-  }, [userId]); // Only re-run when userId changes
+  }, []); // Remove userId dependency to fetch ALL orders regardless of user
 
   const handleAccept = async (orderId: string, currentUser: any) => {
     try {
