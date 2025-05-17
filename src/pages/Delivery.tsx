@@ -110,7 +110,8 @@ export default function Delivery() {
             {/* Test Order Generator Component */}
             {showTestTools && (
               <div className="lg:col-span-2 mt-2">
-                <TestOrderGenerator onOrderCreated={refreshOrders} />
+                {/* Remove the onOrderCreated prop since it doesn't exist in the TestOrderGenerator component */}
+                <TestOrderGenerator />
               </div>
             )}
             
