@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, updateDoc, doc, orderBy, onSnapshot, Timestamp, limit } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { OrderItem } from '@/types';
 
-export function useDeliveryOrders(userId: string | undefined) {
+export function useDeliveryOrders(userId: string | undefined, autoRefresh: boolean = false) {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +60,15 @@ export function useDeliveryOrders(userId: string | undefined) {
         orderBy("createdAt", "desc")
       );
       
+      // If autoRefresh is false, just do a one-time fetch instead of setting up a listener
+      if (!autoRefresh) {
+        console.log("Auto-refresh disabled, doing one-time fetch");
+        fetchOrdersManually();
+        return () => {}; // Return empty cleanup function
+      }
+      
+      // Otherwise, set up the real-time listener
+      console.log("Setting up real-time listener for orders");
       const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
         console.log("🔄 Snapshot received, documents count:", snapshot.docs.length);
         
@@ -82,7 +90,6 @@ export function useDeliveryOrders(userId: string | undefined) {
         
         if (fetchedOrders.length === 0) {
           console.log("⚠️ No orders found in the database");
-          // No longer setting a timeout here, user can manually refresh
         } else {
           console.log("✅ Orders found! First order:", fetchedOrders[0]);
           
@@ -115,7 +122,7 @@ export function useDeliveryOrders(userId: string | undefined) {
       // Try manual fetch if listener setup fails
       fetchOrdersManually();
     }
-  }, [refreshTrigger]); // Added refreshTrigger as a dependency
+  }, [refreshTrigger, autoRefresh]); // Added autoRefresh as dependency
 
   const handleAccept = async (orderId: string, currentUser: any) => {
     try {

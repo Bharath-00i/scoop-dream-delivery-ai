@@ -22,7 +22,7 @@ export default function Delivery() {
   useEffect(() => {
     setAuthChecked(true);
     
-    // Immediately refresh orders when page loads
+    // Initial load of orders, but don't continuously refresh
     if (refreshOrders) {
       console.log("Initial order refresh on delivery page mount");
       refreshOrders();
@@ -38,7 +38,7 @@ export default function Delivery() {
     handleAccept,
     handleDeliver,
     refreshOrders
-  } = useDeliveryOrders(undefined);
+  } = useDeliveryOrders(undefined, false); // Pass false to disable auto-refresh
 
   console.log("Delivery page - Total orders:", orders.length);
 
