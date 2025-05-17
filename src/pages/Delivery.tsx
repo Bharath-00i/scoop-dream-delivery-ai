@@ -21,12 +21,6 @@ export default function Delivery() {
   // Handle authentication check as a state effect
   useEffect(() => {
     setAuthChecked(true);
-    
-    // Initial load of orders, but don't continuously refresh
-    if (refreshOrders) {
-      console.log("Initial order refresh on delivery page mount");
-      refreshOrders();
-    }
   }, []);
 
   // We don't pass userId to useDeliveryOrders anymore since we want ALL orders
@@ -39,6 +33,12 @@ export default function Delivery() {
     handleDeliver,
     refreshOrders
   } = useDeliveryOrders(undefined, false); // Pass false to disable auto-refresh
+
+  // Fetch orders once on component mount
+  useEffect(() => {
+    console.log("Initial order refresh on delivery page mount");
+    refreshOrders();
+  }, []); // Empty dependency array ensures this runs only once
 
   console.log("Delivery page - Total orders:", orders.length);
 
@@ -110,7 +110,6 @@ export default function Delivery() {
             {/* Test Order Generator Component */}
             {showTestTools && (
               <div className="lg:col-span-2 mt-2">
-                {/* Remove the onOrderCreated prop since it doesn't exist in the TestOrderGenerator component */}
                 <TestOrderGenerator />
               </div>
             )}

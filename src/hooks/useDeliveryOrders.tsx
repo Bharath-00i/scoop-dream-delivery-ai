@@ -49,80 +49,17 @@ export function useDeliveryOrders(userId: string | undefined, autoRefresh: boole
     setRefreshTrigger(prev => prev + 1);
   };
 
+  // Only run this effect when the refreshTrigger changes
   useEffect(() => {
     setLoading(true);
     console.log("⭐ Starting orders fetch for delivery dashboard, refresh count:", refreshTrigger);
     
-    try {
-      // Set up real-time listener for ALL orders in the system
-      const ordersQuery = query(
-        collection(firestore, "orders"),
-        orderBy("createdAt", "desc")
-      );
-      
-      // If autoRefresh is false, just do a one-time fetch instead of setting up a listener
-      if (!autoRefresh) {
-        console.log("Auto-refresh disabled, doing one-time fetch");
-        fetchOrdersManually();
-        return () => {}; // Return empty cleanup function
-      }
-      
-      // Otherwise, set up the real-time listener
-      console.log("Setting up real-time listener for orders");
-      const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
-        console.log("🔄 Snapshot received, documents count:", snapshot.docs.length);
-        
-        const fetchedOrders = snapshot.docs.map(doc => {
-          const data = doc.data();
-          // Convert Firestore timestamp to JS Date if needed
-          const createdAt = data.createdAt instanceof Timestamp 
-            ? data.createdAt.toDate() 
-            : data.createdAt;
-            
-          return {
-            id: doc.id,
-            ...data,
-            createdAt
-          };
-        }) as OrderItem[];
-        
-        console.log("📊 Total orders fetched:", fetchedOrders.length);
-        
-        if (fetchedOrders.length === 0) {
-          console.log("⚠️ No orders found in the database");
-        } else {
-          console.log("✅ Orders found! First order:", fetchedOrders[0]);
-          
-          // Debug order statuses
-          const pendingCount = fetchedOrders.filter(o => o.status === 'pending').length;
-          const acceptedCount = fetchedOrders.filter(o => o.status === 'accepted').length;
-          const deliveredCount = fetchedOrders.filter(o => o.status === 'delivered').length;
-          
-          console.log(`📊 Order status counts - Pending: ${pendingCount}, Accepted: ${acceptedCount}, Delivered: ${deliveredCount}`);
-        }
-        
-        // Show ALL orders in the dashboard regardless of status
-        setOrders(fetchedOrders);
-        setLoading(false);
-      }, (error) => {
-        console.error("Error fetching orders:", error);
-        toast.error("Failed to fetch orders");
-        setLoading(false);
-        // Try manual fetch as fallback
-        fetchOrdersManually();
-      });
-      
-      return () => {
-        unsubscribe();
-      };
-    } catch (error) {
-      console.error("Error setting up listener:", error);
-      toast.error("Failed to set up order tracking");
-      setLoading(false);
-      // Try manual fetch if listener setup fails
-      fetchOrdersManually();
-    }
-  }, [refreshTrigger, autoRefresh]); // Added autoRefresh as dependency
+    // Always use the manual fetch method to avoid any listeners
+    fetchOrdersManually();
+    
+    // Return empty cleanup to ensure no lingering listeners
+    return () => {};
+  }, [refreshTrigger]); // Only depend on refreshTrigger
 
   const handleAccept = async (orderId: string, currentUser: any) => {
     try {
