@@ -9,11 +9,13 @@ export function useDeliveryOrders(userId: string | undefined) {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Function to manually fetch orders as a backup
+  // Function to manually fetch orders
   const fetchOrdersManually = async () => {
+    setLoading(true);
     try {
-      console.log("Manually fetching orders as backup");
+      console.log("Manually fetching orders");
       const ordersQuery = query(
         collection(firestore, "orders"),
         orderBy("createdAt", "desc"),
@@ -31,8 +33,8 @@ export function useDeliveryOrders(userId: string | undefined) {
         console.log("Sample order data:", fetchedOrders[0]);
         setOrders(fetchedOrders);
       } else {
-        console.log("No orders found in manual fetch either.");
-        toast.error("No orders found. Create some test orders to see them here.");
+        console.log("No orders found in manual fetch.");
+        toast.info("No orders found yet. Check back later or create test orders.");
       }
       setLoading(false);
     } catch (error) {
@@ -42,9 +44,15 @@ export function useDeliveryOrders(userId: string | undefined) {
     }
   };
 
+  // Function to trigger a refresh
+  const refreshOrders = () => {
+    console.log("Refresh triggered manually");
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   useEffect(() => {
     setLoading(true);
-    console.log("⭐ Starting orders fetch for delivery dashboard");
+    console.log("⭐ Starting orders fetch for delivery dashboard, refresh count:", refreshTrigger);
     
     try {
       // Set up real-time listener for ALL orders in the system
@@ -74,8 +82,7 @@ export function useDeliveryOrders(userId: string | undefined) {
         
         if (fetchedOrders.length === 0) {
           console.log("⚠️ No orders found in the database");
-          // Try manual fetch after 2 seconds if no orders found
-          setTimeout(fetchOrdersManually, 2000);
+          // No longer setting a timeout here, user can manually refresh
         } else {
           console.log("✅ Orders found! First order:", fetchedOrders[0]);
           
@@ -108,7 +115,7 @@ export function useDeliveryOrders(userId: string | undefined) {
       // Try manual fetch if listener setup fails
       fetchOrdersManually();
     }
-  }, []); // No dependencies to fetch ALL orders
+  }, [refreshTrigger]); // Added refreshTrigger as a dependency
 
   const handleAccept = async (orderId: string, currentUser: any) => {
     try {
@@ -139,6 +146,9 @@ export function useDeliveryOrders(userId: string | undefined) {
       const acceptedOrder = orders.find(order => order.id === orderId);
       setSelectedOrder(acceptedOrder || null);
       toast.success("Order accepted! Navigate to customer location.");
+      
+      // Refresh orders after accepting
+      refreshOrders();
     } catch (error) {
       console.error("Error accepting order:", error);
       toast.error("Failed to accept order. Please try again.");
@@ -157,6 +167,9 @@ export function useDeliveryOrders(userId: string | undefined) {
       
       toast.success("Order marked as delivered!");
       setSelectedOrder(null);
+      
+      // Refresh orders after delivering
+      refreshOrders();
     } catch (error) {
       console.error("Error delivering order:", error);
       toast.error("Failed to mark order as delivered. Please try again.");
@@ -169,6 +182,7 @@ export function useDeliveryOrders(userId: string | undefined) {
     selectedOrder,
     setSelectedOrder,
     handleAccept,
-    handleDeliver
+    handleDeliver,
+    refreshOrders // Expose refresh function
   };
 }

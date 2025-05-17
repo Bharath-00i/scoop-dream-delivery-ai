@@ -13,9 +13,17 @@ interface OrderListProps {
   onAccept: (orderId: string) => void;
   onDeliver: (orderId: string) => void;
   type: "current" | "completed";
+  onRefreshOrders: () => void; // New prop to trigger refresh
 }
 
-export default function OrderList({ orders, loading, onAccept, onDeliver, type }: OrderListProps) {
+export default function OrderList({ 
+  orders, 
+  loading, 
+  onAccept, 
+  onDeliver, 
+  type,
+  onRefreshOrders 
+}: OrderListProps) {
   const title = type === "current" ? "Current Orders" : "Completed Orders";
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   
@@ -39,13 +47,12 @@ export default function OrderList({ orders, loading, onAccept, onDeliver, type }
     console.log("Manual refresh triggered");
     setLastRefresh(new Date());
     toast.info("Refreshing orders...");
-    // Use a short timeout to make the refresh feel more substantial
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
+    
+    // Call the onRefreshOrders prop instead of reloading the page
+    onRefreshOrders();
   };
 
-  // Force refresh when component mounts or when refreshed
+  // Force refresh when component mounts
   useEffect(() => {
     console.log("OrderList for", type, "updated at", lastRefresh.toISOString());
   }, [type, lastRefresh]);

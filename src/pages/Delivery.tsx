@@ -21,6 +21,12 @@ export default function Delivery() {
   // Handle authentication check as a state effect
   useEffect(() => {
     setAuthChecked(true);
+    
+    // Immediately refresh orders when page loads
+    if (refreshOrders) {
+      console.log("Initial order refresh on delivery page mount");
+      refreshOrders();
+    }
   }, []);
 
   // We don't pass userId to useDeliveryOrders anymore since we want ALL orders
@@ -30,7 +36,8 @@ export default function Delivery() {
     selectedOrder,
     setSelectedOrder,
     handleAccept,
-    handleDeliver
+    handleDeliver,
+    refreshOrders
   } = useDeliveryOrders(undefined);
 
   console.log("Delivery page - Total orders:", orders.length);
@@ -73,6 +80,7 @@ export default function Delivery() {
                 onAccept={acceptOrder}
                 onDeliver={handleDeliver}
                 type="current"
+                onRefreshOrders={refreshOrders}
               />
             </TabsContent>
             
@@ -83,6 +91,7 @@ export default function Delivery() {
                 onAccept={acceptOrder}
                 onDeliver={handleDeliver}
                 type="completed"
+                onRefreshOrders={refreshOrders}
               />
             </TabsContent>
 
@@ -101,7 +110,7 @@ export default function Delivery() {
             {/* Test Order Generator Component */}
             {showTestTools && (
               <div className="lg:col-span-2 mt-2">
-                <TestOrderGenerator />
+                <TestOrderGenerator onOrderCreated={refreshOrders} />
               </div>
             )}
             
