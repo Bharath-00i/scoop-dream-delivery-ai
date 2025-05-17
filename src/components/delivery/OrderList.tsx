@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Package, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface OrderListProps {
   orders: OrderItem[];
@@ -18,7 +19,7 @@ export default function OrderList({ orders, loading, onAccept, onDeliver, type }
   const title = type === "current" ? "Current Orders" : "Completed Orders";
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   
-  // Filter orders based on type
+  // Filter orders based on type - ensure we're showing all relevant orders
   const filteredOrders = type === "current" 
     ? orders.filter(order => order.status === 'pending' || order.status === 'accepted')
     : orders.filter(order => order.status === 'delivered');
@@ -26,12 +27,22 @@ export default function OrderList({ orders, loading, onAccept, onDeliver, type }
   console.log(`${type} orders count:`, filteredOrders.length);
   if (filteredOrders.length > 0) {
     console.log(`First ${type} order:`, filteredOrders[0]);
+  } else {
+    console.log(`No ${type} orders found. Total orders available:`, orders.length);
+    // Debug all orders to see what's available
+    if (orders.length > 0) {
+      console.log("All order statuses:", orders.map(order => order.status));
+    }
   }
   
   const handleRefresh = () => {
     console.log("Manual refresh triggered");
     setLastRefresh(new Date());
-    window.location.reload();
+    toast.info("Refreshing orders...");
+    // Use a short timeout to make the refresh feel more substantial
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
   };
 
   // Force refresh when component mounts or when refreshed
@@ -63,7 +74,10 @@ export default function OrderList({ orders, loading, onAccept, onDeliver, type }
         <div className="text-center py-10">
           <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p className="text-gray-500 mb-4">
-            {type === "current" ? "No orders available at the moment" : "No completed orders yet"}
+            {type === "current" ? 
+              "No pending or accepted orders available" : 
+              "No completed orders yet"
+            }
           </p>
           <Button 
             variant="outline" 

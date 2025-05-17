@@ -30,10 +30,15 @@ export function useDeliveryOrders(userId: string | undefined) {
       if (fetchedOrders.length > 0) {
         console.log("Sample order data:", fetchedOrders[0]);
         setOrders(fetchedOrders);
-        setLoading(false);
+      } else {
+        console.log("No orders found in manual fetch either.");
+        toast.error("No orders found. Create some test orders to see them here.");
       }
+      setLoading(false);
     } catch (error) {
       console.error("Error in manual fetch:", error);
+      toast.error("Failed to fetch orders");
+      setLoading(false);
     }
   };
 
@@ -41,60 +46,68 @@ export function useDeliveryOrders(userId: string | undefined) {
     setLoading(true);
     console.log("⭐ Starting orders fetch for delivery dashboard");
     
-    // Set up real-time listener for ALL orders in the system
-    const ordersQuery = query(
-      collection(firestore, "orders"),
-      orderBy("createdAt", "desc")
-    );
-    
-    const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
-      console.log("🔄 Snapshot received, documents count:", snapshot.docs.length);
+    try {
+      // Set up real-time listener for ALL orders in the system
+      const ordersQuery = query(
+        collection(firestore, "orders"),
+        orderBy("createdAt", "desc")
+      );
       
-      const fetchedOrders = snapshot.docs.map(doc => {
-        const data = doc.data();
-        // Convert Firestore timestamp to JS Date if needed
-        const createdAt = data.createdAt instanceof Timestamp 
-          ? data.createdAt.toDate() 
-          : data.createdAt;
+      const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+        console.log("🔄 Snapshot received, documents count:", snapshot.docs.length);
+        
+        const fetchedOrders = snapshot.docs.map(doc => {
+          const data = doc.data();
+          // Convert Firestore timestamp to JS Date if needed
+          const createdAt = data.createdAt instanceof Timestamp 
+            ? data.createdAt.toDate() 
+            : data.createdAt;
+            
+          return {
+            id: doc.id,
+            ...data,
+            createdAt
+          };
+        }) as OrderItem[];
+        
+        console.log("📊 Total orders fetched:", fetchedOrders.length);
+        
+        if (fetchedOrders.length === 0) {
+          console.log("⚠️ No orders found in the database");
+          // Try manual fetch after 2 seconds if no orders found
+          setTimeout(fetchOrdersManually, 2000);
+        } else {
+          console.log("✅ Orders found! First order:", fetchedOrders[0]);
           
-        return {
-          id: doc.id,
-          ...data,
-          createdAt
-        };
-      }) as OrderItem[];
-      
-      console.log("📊 Total orders fetched:", fetchedOrders.length);
-      
-      if (fetchedOrders.length === 0) {
-        console.log("⚠️ No orders found in the database");
-        // Try manual fetch after 2 seconds if no orders found
-        setTimeout(fetchOrdersManually, 2000);
-      } else {
-        console.log("✅ Orders found! First order:", fetchedOrders[0]);
+          // Debug order statuses
+          const pendingCount = fetchedOrders.filter(o => o.status === 'pending').length;
+          const acceptedCount = fetchedOrders.filter(o => o.status === 'accepted').length;
+          const deliveredCount = fetchedOrders.filter(o => o.status === 'delivered').length;
+          
+          console.log(`📊 Order status counts - Pending: ${pendingCount}, Accepted: ${acceptedCount}, Delivered: ${deliveredCount}`);
+        }
         
-        // Debug order statuses
-        const pendingCount = fetchedOrders.filter(o => o.status === 'pending').length;
-        const acceptedCount = fetchedOrders.filter(o => o.status === 'accepted').length;
-        const deliveredCount = fetchedOrders.filter(o => o.status === 'delivered').length;
-        
-        console.log(`📊 Order status counts - Pending: ${pendingCount}, Accepted: ${acceptedCount}, Delivered: ${deliveredCount}`);
-      }
+        // Show ALL orders in the dashboard regardless of status
+        setOrders(fetchedOrders);
+        setLoading(false);
+      }, (error) => {
+        console.error("Error fetching orders:", error);
+        toast.error("Failed to fetch orders");
+        setLoading(false);
+        // Try manual fetch as fallback
+        fetchOrdersManually();
+      });
       
-      // Show ALL orders in the dashboard regardless of status
-      setOrders(fetchedOrders);
+      return () => {
+        unsubscribe();
+      };
+    } catch (error) {
+      console.error("Error setting up listener:", error);
+      toast.error("Failed to set up order tracking");
       setLoading(false);
-    }, (error) => {
-      console.error("Error fetching orders:", error);
-      toast.error("Failed to fetch orders");
-      setLoading(false);
-      // Try manual fetch as fallback
+      // Try manual fetch if listener setup fails
       fetchOrdersManually();
-    });
-    
-    return () => {
-      unsubscribe();
-    };
+    }
   }, []); // No dependencies to fetch ALL orders
 
   const handleAccept = async (orderId: string, currentUser: any) => {
