@@ -12,12 +12,14 @@ interface DeliveryMapProps {
   shopLocation: Location;
   customerLocation?: Location;
   apiKey?: string;
+  showRoute?: boolean;
 }
 
-const DeliveryMap = ({ shopLocation, customerLocation, apiKey }: DeliveryMapProps) => {
+const DeliveryMap = ({ shopLocation, customerLocation, apiKey, showRoute = false }: DeliveryMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string>(apiKey || '');
+  const [routeLoaded, setRouteLoaded] = useState(false);
 
   useEffect(() => {
     if (!mapContainer.current || !customerLocation) return;
@@ -38,7 +40,6 @@ const DeliveryMap = ({ shopLocation, customerLocation, apiKey }: DeliveryMapProp
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v11',
         bounds: bounds,
-        // Using fitBoundsOptions instead of direct padding property
         fitBoundsOptions: {
           padding: 50
         }
@@ -47,14 +48,23 @@ const DeliveryMap = ({ shopLocation, customerLocation, apiKey }: DeliveryMapProp
       // Add markers
       new mapboxgl.Marker({ color: '#FF0000' })
         .setLngLat([shopLocation.lng, shopLocation.lat])
-        .addTo(map.current);
+        .addTo(map.current)
+        .setPopup(new mapboxgl.Popup().setText('Shop Location'));
 
       new mapboxgl.Marker({ color: '#0000FF' })
         .setLngLat([customerLocation.lng, customerLocation.lat])
-        .addTo(map.current);
+        .addTo(map.current)
+        .setPopup(new mapboxgl.Popup().setText('Customer Location'));
 
       // Add navigation controls
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      // Get and display route if showRoute is true
+      if (showRoute && !routeLoaded) {
+        map.current.on('load', () => {
+          getRoute(shopLocation, customerLocation);
+        });
+      }
 
       // Cleanup
       return () => {
@@ -63,7 +73,67 @@ const DeliveryMap = ({ shopLocation, customerLocation, apiKey }: DeliveryMapProp
     } catch (error) {
       console.error('Error initializing map:', error);
     }
-  }, [shopLocation, customerLocation, mapboxToken]);
+  }, [shopLocation, customerLocation, mapboxToken, showRoute, routeLoaded]);
+
+  // Get route between shop and customer
+  const getRoute = async (start: Location, end: Location) => {
+    try {
+      if (!map.current) return;
+      
+      const query = await fetch(
+        `https://api.mapbox.com/directions/v5/mapbox/driving/${start.lng},${start.lat};${end.lng},${end.lat}?steps=true&geometries=geojson&access_token=${mapboxToken}`,
+        { method: 'GET' }
+      );
+      
+      const json = await query.json();
+      
+      if (json.routes && json.routes.length > 0) {
+        const route = json.routes[0].geometry.coordinates;
+        
+        if (map.current.getSource('route')) {
+          (map.current.getSource('route') as mapboxgl.GeoJSONSource).setData({
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: route
+            }
+          });
+        } else {
+          map.current.addSource('route', {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: route
+              }
+            }
+          });
+          
+          map.current.addLayer({
+            id: 'route',
+            type: 'line',
+            source: 'route',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#3887be',
+              'line-width': 5,
+              'line-opacity': 0.75
+            }
+          });
+        }
+        
+        setRouteLoaded(true);
+      }
+    } catch (error) {
+      console.error('Error getting route:', error);
+    }
+  };
 
   // If we don't have a token, render a form to input it
   if (!mapboxToken) {
@@ -87,7 +157,7 @@ const DeliveryMap = ({ shopLocation, customerLocation, apiKey }: DeliveryMapProp
 
   return (
     <div className="w-full h-full">
-      <div ref={mapContainer} className="w-full h-full" />
+      <div ref={mapContainer} className="w-full h-full rounded-lg" />
     </div>
   );
 };

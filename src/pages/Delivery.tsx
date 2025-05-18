@@ -9,73 +9,36 @@ import { SHOP_LOCATION } from '@/lib/location';
 import DeliveryMap from '@/components/DeliveryMap';
 import OrderList from '@/components/delivery/OrderList';
 import { useDeliveryOrders } from '@/hooks/useDeliveryOrders';
-import TestOrderGenerator from '@/components/delivery/TestOrderGenerator';
 import { Button } from '@/components/ui/button';
-import { Package, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { toast } from "sonner";
 
 export default function Delivery() {
   const { currentUser, isDelivery } = useAuth();
   const [authChecked, setAuthChecked] = useState(false);
-  const [showTestTools, setShowTestTools] = useState(false);
   
   // Handle authentication check as a state effect
   useEffect(() => {
     setAuthChecked(true);
   }, []);
 
-  // We use useDeliveryOrders hook without userId filter to get ALL orders
   const {
     orders,
     loading,
     selectedOrder,
-    setSelectedOrder,
     handleAccept,
     handleDeliver,
+    handleShowRoute,
     refreshOrders
-  } = useDeliveryOrders(undefined, false); // Pass false to disable auto-refresh
+  } = useDeliveryOrders();
 
-  // Fetch orders once on component mount
-  useEffect(() => {
-    console.log("Initial order refresh on delivery page mount");
-    refreshOrders();
-    
-    // Set up interval for periodic refreshing (every 30 seconds)
-    const intervalId = setInterval(() => {
-      console.log("Performing periodic order refresh");
-      refreshOrders();
-    }, 30000);
-    
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId);
-  }, []); 
-
-  console.log("Delivery page - Total orders:", orders.length);
-  
-  // Log each order for debugging
-  useEffect(() => {
-    if (orders.length > 0) {
-      console.log("Current orders on dashboard:", orders.map(order => ({
-        id: order.id,
-        status: order.status,
-        customer: order.customerName,
-        items: order.items
-      })));
-    }
-  }, [orders]);
-
-  // Accept order wrapper function
-  const acceptOrder = (orderId: string) => {
-    handleAccept(orderId, currentUser);
-  };
-  
-  // Manual refresh function with visual feedback
+  // Handle manual refresh with visual feedback
   const handleManualRefresh = () => {
     toast.info("Refreshing orders...");
     refreshOrders();
   };
 
-  // Move authentication check here, after all hooks are used
+  // Move authentication check here
   if (authChecked && (!currentUser || !isDelivery())) {
     return <Navigate to="/login" />;
   }
@@ -114,10 +77,10 @@ export default function Delivery() {
               <OrderList
                 orders={orders}
                 loading={loading}
-                onAccept={acceptOrder}
+                onAccept={(orderId) => handleAccept(orderId, currentUser)}
                 onDeliver={handleDeliver}
+                onShowRoute={handleShowRoute}
                 type="current"
-                onRefreshOrders={refreshOrders}
               />
             </TabsContent>
             
@@ -125,40 +88,24 @@ export default function Delivery() {
               <OrderList
                 orders={orders}
                 loading={loading}
-                onAccept={acceptOrder}
+                onAccept={(orderId) => handleAccept(orderId, currentUser)}
                 onDeliver={handleDeliver}
+                onShowRoute={handleShowRoute}
                 type="completed"
-                onRefreshOrders={refreshOrders}
               />
             </TabsContent>
-
-            {/* Test Order Generator (toggle button) */}
-            <div className="lg:col-span-2 flex justify-center mt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowTestTools(!showTestTools)}
-                className="flex gap-2 items-center"
-              >
-                <Package size={16} />
-                {showTestTools ? "Hide Test Tools" : "Show Test Tools"}
-              </Button>
-            </div>
-            
-            {/* Test Order Generator Component */}
-            {showTestTools && (
-              <div className="lg:col-span-2 mt-2">
-                <TestOrderGenerator onOrderCreated={refreshOrders} />
-              </div>
-            )}
             
             {selectedOrder && (
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-2xl shadow-lg p-6">
-                  <h2 className="text-2xl font-bold mb-6">Delivery Map</h2>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {selectedOrder.status === 'accepted' ? 'Delivery Route' : 'Customer Location'}
+                  </h2>
                   <div className="h-[400px] rounded-lg overflow-hidden">
                     <DeliveryMap 
                       shopLocation={SHOP_LOCATION}
                       customerLocation={selectedOrder.customerLocation}
+                      showRoute={selectedOrder.status === 'accepted'}
                     />
                   </div>
                 </div>
