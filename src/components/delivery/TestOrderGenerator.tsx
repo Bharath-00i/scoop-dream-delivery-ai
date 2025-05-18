@@ -9,7 +9,11 @@ import { firestore } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
 
-export default function TestOrderGenerator() {
+interface TestOrderGeneratorProps {
+  onOrderCreated?: () => void;
+}
+
+export default function TestOrderGenerator({ onOrderCreated }: TestOrderGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [customerName, setCustomerName] = useState("Test Customer");
   const [address, setAddress] = useState("123 Test Street");
@@ -53,10 +57,17 @@ export default function TestOrderGenerator() {
         console.log("Test order successfully created with ID:", docRef.id);
         toast.success(`Test order created with ID: ${docRef.id}`);
         
-        // Force a refresh of the data
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // Call onOrderCreated callback if provided
+        if (onOrderCreated) {
+          console.log("Calling onOrderCreated callback");
+          onOrderCreated();
+        } else {
+          // Fallback to page reload if no callback provided (for backward compatibility)
+          console.log("No callback provided, using fallback page refresh");
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
       } catch (firestoreError) {
         console.error("Firestore error details:", firestoreError);
         if (firestoreError.code) {
