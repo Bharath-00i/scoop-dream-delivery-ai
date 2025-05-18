@@ -11,7 +11,7 @@ import OrderList from '@/components/delivery/OrderList';
 import { useDeliveryOrders } from '@/hooks/useDeliveryOrders';
 import TestOrderGenerator from '@/components/delivery/TestOrderGenerator';
 import { Button } from '@/components/ui/button';
-import { Package } from 'lucide-react';
+import { Package, RefreshCw } from 'lucide-react';
 
 export default function Delivery() {
   const { currentUser, isDelivery } = useAuth();
@@ -46,6 +46,12 @@ export default function Delivery() {
   const acceptOrder = (orderId: string) => {
     handleAccept(orderId, currentUser);
   };
+  
+  // Manual refresh function with visual feedback
+  const handleManualRefresh = () => {
+    toast.info("Refreshing orders...");
+    refreshOrders();
+  };
 
   // Move authentication check here, after all hooks are used
   if (authChecked && (!currentUser || !isDelivery())) {
@@ -65,6 +71,15 @@ export default function Delivery() {
         >
           Delivery Dashboard
         </motion.h1>
+        
+        <div className="mb-6 flex justify-center">
+          <Button
+            className="flex items-center gap-2 bg-pink-500 hover:bg-pink-600"
+            onClick={handleManualRefresh}
+          >
+            <RefreshCw className="h-4 w-4" /> Refresh Orders
+          </Button>
+        </div>
         
         <Tabs defaultValue="current" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -133,3 +148,6 @@ export default function Delivery() {
     </div>
   );
 }
+
+// Import toast
+import { toast } from "sonner";
