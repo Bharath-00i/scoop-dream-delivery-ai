@@ -12,6 +12,7 @@ import { useDeliveryOrders } from '@/hooks/useDeliveryOrders';
 import TestOrderGenerator from '@/components/delivery/TestOrderGenerator';
 import { Button } from '@/components/ui/button';
 import { Package, RefreshCw } from 'lucide-react';
+import { toast } from "sonner";
 
 export default function Delivery() {
   const { currentUser, isDelivery } = useAuth();
@@ -23,7 +24,7 @@ export default function Delivery() {
     setAuthChecked(true);
   }, []);
 
-  // We don't pass userId to useDeliveryOrders anymore since we want ALL orders
+  // We use useDeliveryOrders hook without userId filter to get ALL orders
   const {
     orders,
     loading,
@@ -38,9 +39,30 @@ export default function Delivery() {
   useEffect(() => {
     console.log("Initial order refresh on delivery page mount");
     refreshOrders();
-  }, []); // Empty dependency array ensures this runs only once
+    
+    // Set up interval for periodic refreshing (every 30 seconds)
+    const intervalId = setInterval(() => {
+      console.log("Performing periodic order refresh");
+      refreshOrders();
+    }, 30000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); 
 
   console.log("Delivery page - Total orders:", orders.length);
+  
+  // Log each order for debugging
+  useEffect(() => {
+    if (orders.length > 0) {
+      console.log("Current orders on dashboard:", orders.map(order => ({
+        id: order.id,
+        status: order.status,
+        customer: order.customerName,
+        items: order.items
+      })));
+    }
+  }, [orders]);
 
   // Accept order wrapper function
   const acceptOrder = (orderId: string) => {
@@ -125,7 +147,7 @@ export default function Delivery() {
             {/* Test Order Generator Component */}
             {showTestTools && (
               <div className="lg:col-span-2 mt-2">
-                <TestOrderGenerator />
+                <TestOrderGenerator onOrderCreated={refreshOrders} />
               </div>
             )}
             
@@ -148,6 +170,3 @@ export default function Delivery() {
     </div>
   );
 }
-
-// Import toast
-import { toast } from "sonner";

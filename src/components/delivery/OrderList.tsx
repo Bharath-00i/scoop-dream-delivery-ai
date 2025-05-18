@@ -13,7 +13,7 @@ interface OrderListProps {
   onAccept: (orderId: string) => void;
   onDeliver: (orderId: string) => void;
   type: "current" | "completed";
-  onRefreshOrders: () => void; // New prop to trigger refresh
+  onRefreshOrders: () => void;
 }
 
 export default function OrderList({ 
@@ -44,7 +44,7 @@ export default function OrderList({
   }
   
   const handleRefresh = () => {
-    console.log("Manual refresh triggered");
+    console.log("Manual refresh triggered from OrderList");
     setLastRefresh(new Date());
     toast.info("Refreshing orders...");
     
@@ -52,7 +52,7 @@ export default function OrderList({
     onRefreshOrders();
   };
 
-  // Force refresh when component mounts
+  // Log when the component updates
   useEffect(() => {
     console.log("OrderList for", type, "updated at", lastRefresh.toISOString());
   }, [type, lastRefresh]);

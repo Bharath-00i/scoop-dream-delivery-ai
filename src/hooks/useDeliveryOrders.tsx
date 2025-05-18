@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, updateDoc, doc, orderBy, onSnapshot, Timestamp, limit, addDoc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
@@ -14,7 +15,7 @@ export function useDeliveryOrders(userId: string | undefined, autoRefresh: boole
   const fetchOrdersManually = async () => {
     setLoading(true);
     try {
-      console.log("Manually fetching orders");
+      console.log("Manually fetching orders from Firestore");
       
       // Query without filters to get ALL orders
       const ordersQuery = query(
@@ -37,10 +38,15 @@ export function useDeliveryOrders(userId: string | undefined, autoRefresh: boole
         return;
       }
       
-      const fetchedOrders = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as OrderItem[];
+      const fetchedOrders = snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Ensure createdAt is formatted properly
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt // Keep the Timestamp as is for sorting
+        };
+      }) as OrderItem[];
       
       console.log("Manual fetch complete. Orders found:", fetchedOrders.length);
       if (fetchedOrders.length > 0) {
@@ -150,7 +156,8 @@ export function useDeliveryOrders(userId: string | undefined, autoRefresh: boole
       // Update order in Firestore
       const orderRef = doc(firestore, "orders", orderId);
       await updateDoc(orderRef, {
-        status: 'delivered'
+        status: 'delivered',
+        deliveredAt: Timestamp.now()
       });
       
       toast.success("Order marked as delivered!");
@@ -171,6 +178,6 @@ export function useDeliveryOrders(userId: string | undefined, autoRefresh: boole
     setSelectedOrder,
     handleAccept,
     handleDeliver,
-    refreshOrders // Expose refresh function
+    refreshOrders
   };
 }
